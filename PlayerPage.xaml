@@ -70,6 +70,8 @@
             <Button x:Name="PlayPauseButton" Content="⏸" Click="PlayPauseButton_Click" 
                     Background="Transparent" Foreground="White" FontSize="24"/>
             <Button x:Name="NextButton" Content="⏭" Click="NextButton_Click" 
+                    Background="Transparent" Foreground="White" FontSize="24"/>
+            <Button x:Name="RepeatButton" Content="⊞" Click="RepeatButton_Click"
                     Background="Transparent" Foreground="White" FontSize="24" Margin="10,0,0,0"/>
         </StackPanel>
     </Grid>

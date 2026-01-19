@@ -137,11 +137,17 @@ namespace levyke
         {
             // здесь можно добавить логику переключения на предыдущий трек
             // для этого нужно будет передавать плейлист между страницами
+            // надо это как нибудь потом поправить
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             // здесь можно добавить логику переключения на следующий трек
+        }
+
+        private void RepeatButton_Click(object sender, RoutedEventArgs e)
+        {
+            // здесь можно добавить логику повтора трека
         }
 
         private void ProgressSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)

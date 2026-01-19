@@ -6,6 +6,7 @@ using Windows.Storage.Search;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
 
 namespace levyke
 {
@@ -61,7 +62,6 @@ namespace levyke
             if (file == null) return;
             try
             {
-                // Используем единый плеер
                 MediaPlayerSingleton.PlayFile(file);
 
                 MiniTrackTitle.Text = file.DisplayName;
@@ -69,14 +69,38 @@ namespace levyke
 
                 try
                 {
-                    var props = await file.Properties.RetrievePropertiesAsync(
-                        new[] { "System.Music.Title", "System.Music.Artist" });
-                    if (props["System.Music.Title"] is string title && !string.IsNullOrWhiteSpace(title))
-                        MiniTrackTitle.Text = title;
-                    if (props["System.Music.Artist"] is string artist && !string.IsNullOrWhiteSpace(artist))
-                        MiniTrackArtist.Text = artist;
+                    var musicInfo = await MusicTagHelper.GetMusicInfo(file);
+
+                    MiniTrackTitle.Text = musicInfo.Title;
+                    MiniTrackArtist.Text = musicInfo.Artist;
+
+                    if (!string.IsNullOrEmpty(musicInfo.Album) && musicInfo.Album != "Неизвестный альбом")
+                    {
+                        // Можно добавить отображение альбома, если нужно
+                    }
+
+                    UpdatePlayButtonState();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        MiniTrackTitle.Text = file.DisplayName;
+                        MiniTrackArtist.Text = "Локальный трек";
+
+                        var props = await file.Properties.RetrievePropertiesAsync(
+                            new[] { "System.Music.Title", "System.Music.Artist" });
+                        if (props["System.Music.Title"] is string title && !string.IsNullOrWhiteSpace(title))
+                            MiniTrackTitle.Text = title;
+                        if (props["System.Music.Artist"] is string artist && !string.IsNullOrWhiteSpace(artist))
+                            MiniTrackArtist.Text = artist;
+                    }
+                    catch
+                    {
+                        MiniTrackTitle.Text = System.IO.Path.GetFileNameWithoutExtension(file.Name);
+                        MiniTrackArtist.Text = "Неизвестный исполнитель";
+                    }
+                }
 
                 try
                 {

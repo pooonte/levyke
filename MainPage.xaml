@@ -9,7 +9,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Pivot Title="levyke" Foreground="DarkCyan">
+        <Pivot Title="levyke" Foreground="#8C0095">
             <PivotItem Header="Медиатека" FontSize="23">
                 <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
                     <ListView.ItemTemplate>
@@ -69,7 +69,7 @@
                 Click="OpenPlayerButton_Click">
                 <StackPanel Orientation="Horizontal" Margin="12,0">
                     <Image x:Name="MiniAlbumArt" Width="40" Height="40" Stretch="UniformToFill"/>
-                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left">
                         <TextBlock x:Name="MiniTrackTitle" Foreground="White" FontSize="14" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="MiniTrackArtist" Foreground="Gray" FontSize="12" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
