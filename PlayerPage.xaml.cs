@@ -224,11 +224,7 @@ namespace levyke
             }
             catch
             {
-                try
-                {
                     FullAlbumArt.Source = new BitmapImage(new Uri("ms-appx:///Assets/DefaultAlbum.png"));
-                }
-                catch { }
             }
         }
     }

@@ -6,11 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{StaticResource MainBackgroundBrush}">
 
     <Grid>
-        <Pivot Title="levyke" Foreground="#8C0095">
-            <PivotItem Header="Медиатека" FontSize="23">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="9*"/>
+            <RowDefinition Height="55*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="levyke" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Pivot Margin="0,48,0,0" Grid.RowSpan="2">
+            <PivotItem Header="Медиатека" FontSize="22">
                 <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
                     <ListView.ItemTemplate>
                         <DataTemplate>
@@ -19,46 +24,42 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </PivotItem>
-            <PivotItem Header="Фототека">
-                <GridView x:Name="PhotoList" ItemClick="GalleryPhoto_Click" IsItemClickEnabled="True" HorizontalAlignment="Stretch" Margin="1,0,-1,0" VerticalAlignment="Stretch">
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding Thumbnail}" Width="70" Height="70" Stretch="UniformToFill" Margin="6"/>
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                    <GridView.ItemContainerStyle>
-                        <Style TargetType="GridViewItem">
-                            <Setter Property="Margin" Value="0"/>
-                            <Setter Property="Padding" Value="0"/>
-                        </Style>
-                    </GridView.ItemContainerStyle>
-                </GridView>
-            </PivotItem>
-            <PivotItem Header="Видеотека">
-                <ListView x:Name="VideoList" ItemClick="GalleryVideo_Click" IsItemClickEnabled="True" Margin="1,0,-1,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+ <!--           <PivotItem Header="Исполнители" FontSize="22">
+                <ListView x:Name="NameList" ItemClick="Names_ItemClick" IsItemClickEnabled="True">
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding File.DisplayName}"
-                       FontSize="16"
-                       Foreground="White"
-                       Margin="12,8"/>
+                            <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
-
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Padding" Value="0"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                        </Style>
-                    </ListView.ItemContainerStyle>
                 </ListView>
+            </PivotItem>
+            <PivotItem Header="Альбомы" FontSize="22">
+                <ListView x:Name="AlbumList" ItemClick="Albums_ItemClick" IsItemClickEnabled="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </PivotItem> -->
+            <PivotItem Header="Тема">
+                <StackPanel Padding="10" Margin="10">
+                    <TextBlock Text="Какой цвет хотите использовать?"
+                           Foreground="{StaticResource AppTitleBrush}" />
+                    <ComboBox x:Name="ThemeSelector"
+                                        DisplayMemberPath="Name"
+                          SelectionChanged="ThemeSelector_SelectionChanged"
+                          Background="{StaticResource MiniPlayerBackgroundBrush}"
+                          Foreground="{StaticResource AppTitleBrush}"
+                          BorderBrush="{StaticResource PlaybackControlBrush}" />
+                </StackPanel>
             </PivotItem>
         </Pivot>
         <Grid x:Name="MiniPlayerPanel"
           VerticalAlignment="Bottom"
-          Background="#222"
+          Background="{StaticResource MiniPlayerBackgroundBrush}"
           Height="60"
-          Visibility="Collapsed">
+          Visibility="Collapsed" Grid.Row="1">
 
             <Button x:Name="OpenPlayerButton"
                 HorizontalAlignment="Left"
@@ -84,8 +85,8 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Margin="0,0,16,0"
-                Background="Transparent"
-                Foreground="White"
+                Background="{StaticResource PlaybackControlBrush}"
+                Foreground="{StaticResource PlaybackControlForegroundBrush}"
                 Click="MiniPlayButton_Click"/>
         </Grid>
     </Grid>

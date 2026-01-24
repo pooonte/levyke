@@ -7,6 +7,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -53,7 +54,7 @@ namespace levyke
 
                 Window.Current.Activate();
                 var view = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
-                view.SetPreferredMinSize(new Windows.Foundation.Size(400, 340));
+                view.SetPreferredMinSize(new Windows.Foundation.Size(400, 370));
             }
         }
 

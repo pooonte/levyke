@@ -1,5 +1,7 @@
-﻿using Singleton;
+﻿using levyke.Models;
+using Singleton;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.Storage.Search;
@@ -13,28 +15,16 @@ namespace levyke
 
     public sealed partial class MainPage : Page
     {
-        // msc
         private ObservableCollection<StorageFile> _tracks = new ObservableCollection<StorageFile>();
         private DispatcherTimer _positionTimer;
-        // msc
-
-        // pft
-        private ObservableCollection<PhotoItem> _photos = new ObservableCollection<PhotoItem>();
-        // pft
-
-        // vdo
-        private ObservableCollection<VideoItem> _videos = new ObservableCollection<VideoItem>();
-        // vdo
+        private List<ColorPalette> _palettes;
 
         public MainPage()
         {
             this.InitializeComponent();
-            MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged; // msc
-            LoadMusicFiles(); // msc
-            LoadPhotoFiles(); // pft
-            LoadVideoFiles(); // vdo
+            MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+            LoadMusicFiles();
         }
-        // msc
         private async void LoadMusicFiles()
         {
             try
@@ -76,7 +66,7 @@ namespace levyke
 
                     if (!string.IsNullOrEmpty(musicInfo.Album) && musicInfo.Album != "Неизвестный альбом")
                     {
-                        // Можно добавить отображение альбома, если нужно
+                        // Можно добавить отображение альбома
                     }
 
                     UpdatePlayButtonState();
@@ -159,124 +149,35 @@ namespace levyke
 
         public void Album_ItemClick(object sender, ItemClickEventArgs e) { }
         public void Artist_ItemClick(object sender, ItemClickEventArgs e) { }
-        // msc
 
-        // pft
-        private async void LoadPhotoFiles()
+        //палитры цветов
+        private void LoadThemes()
         {
-            try
+            _palettes = PaletteProvider.GetAvailablePalettes();
+            ThemeSelector.ItemsSource = _palettes;
+            ThemeSelector.DisplayMemberPath = "Name";
+
+            // Восстанавливаем выбор
+            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedPaletteIndex"];
+            if (savedIndex != null)
             {
-                var picturesFolder = KnownFolders.PicturesLibrary;
-                var queryOptions = new QueryOptions(CommonFileQuery.OrderByDate, new[]
+                int index = (int)savedIndex;
+                if (index >= 0 && index < _palettes.Count)
                 {
-                    ".jpg", ".jpeg", ".png", ".gif", ".bmp"
-                });
-                var fileQuery = picturesFolder.CreateFileQueryWithOptions(queryOptions);
-                var files = await fileQuery.GetFilesAsync();
-
-                foreach (var file in files)
-                {
-                    var thumb = await file.GetThumbnailAsync(
-                        Windows.Storage.FileProperties.ThumbnailMode.PicturesView,
-                        150);
-
-                    var bitmap = new BitmapImage();
-                    if (thumb != null && thumb.Size > 0)
-                    {
-                        await bitmap.SetSourceAsync(thumb);
-                    }
-
-                    _photos.Add(new PhotoItem { File = file, Thumbnail = bitmap });
+                    ThemeSelector.SelectedIndex = index;
                 }
-
-                PhotoList.ItemsSource = _photos;
-            }
-            catch (Exception ex)
-            {
-                var dialog = new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}");
-                _ = dialog.ShowAsync();
             }
         }
 
-        private void GalleryPhoto_Click(object sender, ItemClickEventArgs e)
+        private void ThemeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.ClickedItem is PhotoItem item)
+            if (ThemeSelector.SelectedItem is ColorPalette selected)
             {
-                Frame.Navigate(typeof(PhotoPage), item.File);
+                PaletteService.ApplyPalette(selected);
+
+                // Сохраняем ИНДЕКС выбранной палитры
+                ApplicationData.Current.LocalSettings.Values["SelectedPaletteIndex"] = ThemeSelector.SelectedIndex;
             }
         }
-        // pft
-
-        // vdo
-        private async void LoadVideoFiles()
-        {
-
-            try
-            {
-                var videosFolder = KnownFolders.VideosLibrary;
-                var queryOptions = new QueryOptions(CommonFileQuery.OrderByDate, new[]
-                {
-                    ".mp4", ".avi", ".mkv", ".wmv", ".mov", ".flv", ".webm"
-                });
-                var fileQuery = videosFolder.CreateFileQueryWithOptions(queryOptions);
-                var files = await fileQuery.GetFilesAsync();
-
-                foreach (var file in files)
-                {
-                    // Пропускаем недоступные файлы (OneDrive и т.д.)
-                    try
-                    {
-                        using (var stream = await file.OpenReadAsync()) { }
-                    }
-                    catch
-                    {
-                        continue;
-                    }
-
-                    // Получаем миниатюру
-                    var thumb = await file.GetThumbnailAsync(
-                        Windows.Storage.FileProperties.ThumbnailMode.VideosView,
-                        150);
-
-                    var bitmap = new BitmapImage();
-                    if (thumb != null && thumb.Size > 0)
-                    {
-                        await bitmap.SetSourceAsync(thumb);
-                    }
-
-                    _videos.Add(new VideoItem { File = file, Thumbnail = bitmap });
-                }
-
-                VideoList.ItemsSource = _videos;
-            }
-            catch (Exception ex)
-            {
-                var dialog = new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}");
-                _ = dialog.ShowAsync();
-            }
-        }
-
-        private void GalleryVideo_Click(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is VideoItem item)
-            {
-                Frame.Navigate(typeof(VideoPage), item.File);
-            }
-        }
-        // vdo
-
-        public class VideoItem
-        {
-            public StorageFile File { get; set; }
-            public BitmapImage Thumbnail { get; set; }
-        }
-        // vdo
-
-        public class PhotoItem
-        {
-            public StorageFile File { get; set; }
-            public BitmapImage Thumbnail { get; set; }
-        }
-        // pft
     }
 }
