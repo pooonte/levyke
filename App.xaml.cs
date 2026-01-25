@@ -1,4 +1,5 @@
-﻿using System;
+﻿using levyke.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +44,18 @@ namespace levyke
 
                 Window.Current.Content = rootFrame;
             }
-
+            // >>> ЗАГРУЖАЕМ ТЕМУ <<<
+            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
+            if (savedIndex != null)
+            {
+                var themes = ThemeProvider.GetThemes();
+                int index = (int)savedIndex;
+                if (index >= 0 && index < themes.Count)
+                {
+                    ThemeService.Apply(themes[index]);
+                }
+            }
+            // <<< КОНЕЦ >>>
             if (e.PrelaunchActivated == false)
             {
                 if (rootFrame.Content == null)

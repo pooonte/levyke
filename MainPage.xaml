@@ -14,7 +14,7 @@
             <RowDefinition Height="55*"/>
         </Grid.RowDefinitions>
         <TextBlock Text="levyke" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Pivot Margin="0,48,0,0" Grid.RowSpan="2">
+        <Pivot Margin="0,53,0,0" Grid.RowSpan="2">
             <PivotItem Header="Медиатека" FontSize="22">
                 <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
                     <ListView.ItemTemplate>
@@ -43,15 +43,14 @@
                 </ListView>
             </PivotItem> -->
             <PivotItem Header="Тема">
-                <StackPanel Padding="10" Margin="10">
-                    <TextBlock Text="Какой цвет хотите использовать?"
-                           Foreground="{StaticResource AppTitleBrush}" />
+                <StackPanel Padding="20" Margin="16">
+                    <TextBlock Text="Выберите тему"
+                           Foreground="White" />
+
                     <ComboBox x:Name="ThemeSelector"
-                                        DisplayMemberPath="Name"
                           SelectionChanged="ThemeSelector_SelectionChanged"
-                          Background="{StaticResource MiniPlayerBackgroundBrush}"
                           Foreground="{StaticResource AppTitleBrush}"
-                          BorderBrush="{StaticResource PlaybackControlBrush}" />
+                          Background="{StaticResource MiniPlayerBackgroundBrush}" />
                 </StackPanel>
             </PivotItem>
         </Pivot>

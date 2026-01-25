@@ -1,11 +1,12 @@
 ﻿<Application
     x:Class="levyke.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:levyke">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
     <Application.Resources>
-        <SolidColorBrush x:Key="AppTitleBrush" Color="#FFFFFF" />
+        <!-- Базовые кисти — ОБЯЗАТЕЛЬНО задать здесь! -->
         <SolidColorBrush x:Key="MainBackgroundBrush" Color="#121212" />
+        <SolidColorBrush x:Key="AppTitleBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="MiniPlayerBackgroundBrush" Color="#1E1E1E" />
         <SolidColorBrush x:Key="PlaybackControlBrush" Color="#BB86FC" />
         <SolidColorBrush x:Key="PlaybackControlForegroundBrush" Color="#FFFFFF" />

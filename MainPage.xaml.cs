@@ -1,4 +1,5 @@
 ﻿using levyke.Models;
+using levyke.Services;
 using Singleton;
 using System;
 using System.Collections.Generic;
@@ -17,13 +18,14 @@ namespace levyke
     {
         private ObservableCollection<StorageFile> _tracks = new ObservableCollection<StorageFile>();
         private DispatcherTimer _positionTimer;
-        private List<ColorPalette> _palettes;
+        private List<ColorPalette> _themes;
 
         public MainPage()
         {
             this.InitializeComponent();
             MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
             LoadMusicFiles();
+            LoadThemes();
         }
         private async void LoadMusicFiles()
         {
@@ -153,19 +155,15 @@ namespace levyke
         //палитры цветов
         private void LoadThemes()
         {
-            _palettes = PaletteProvider.GetAvailablePalettes();
-            ThemeSelector.ItemsSource = _palettes;
+            _themes = ThemeProvider.GetThemes();
+            ThemeSelector.ItemsSource = _themes;
             ThemeSelector.DisplayMemberPath = "Name";
 
             // Восстанавливаем выбор
-            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedPaletteIndex"];
+            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
             if (savedIndex != null)
             {
-                int index = (int)savedIndex;
-                if (index >= 0 && index < _palettes.Count)
-                {
-                    ThemeSelector.SelectedIndex = index;
-                }
+                ThemeSelector.SelectedIndex = (int)savedIndex;
             }
         }
 
@@ -173,10 +171,9 @@ namespace levyke
         {
             if (ThemeSelector.SelectedItem is ColorPalette selected)
             {
-                PaletteService.ApplyPalette(selected);
-
-                // Сохраняем ИНДЕКС выбранной палитры
-                ApplicationData.Current.LocalSettings.Values["SelectedPaletteIndex"] = ThemeSelector.SelectedIndex;
+                ThemeService.Apply(selected);
+                // Сохраняем индекс
+                ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"] = ThemeSelector.SelectedIndex;
             }
         }
     }
