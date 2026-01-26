@@ -1,4 +1,7 @@
-﻿using Windows.Storage;
+﻿// Models/TrackItem.cs
+using Windows.Storage;
+using Windows.Storage.FileProperties;
+using Windows.Foundation;
 using System;
 
 namespace levyke.Models
@@ -9,13 +12,36 @@ namespace levyke.Models
         public string Title { get; set; } = "Неизвестный трек";
         public string Artist { get; set; } = "Неизвестный исполнитель";
         public string Album { get; set; } = "Неизвестный альбом";
-        public TimeSpan Duration { get; set; } = TimeSpan.Zero;
-        public string DurationString => FormatTime(Duration);
+        public string Number { get; set; } = "";
 
-        private string FormatTime(TimeSpan t)
+        public static async System.Threading.Tasks.Task<TrackItem> FromFile(StorageFile file)
         {
-            if (t.TotalSeconds <= 0) return "0:00";
-            return $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
+            var item = new TrackItem { File = file };
+
+            try
+            {
+                var props = await file.Properties.GetMusicPropertiesAsync().AsTask();
+
+                item.Title = string.IsNullOrEmpty(props.Title)
+                    ? file.DisplayName
+                    : props.Title;
+
+                item.Artist = string.IsNullOrEmpty(props.Artist)
+                    ? "Неизвестный исполнитель"
+                    : props.Artist;
+
+                item.Album = string.IsNullOrEmpty(props.Album)
+                    ? "Неизвестный альбом"
+                    : props.Album;
+            }
+            catch
+            {
+                item.Title = file.DisplayName;
+                item.Artist = "Неизвестный исполнитель";
+                item.Album = "Неизвестный альбом";
+            }
+
+            return item;
         }
     }
 }

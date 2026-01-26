@@ -4,6 +4,7 @@ using Singleton;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.Storage;
 using Windows.Storage.Search;
 using Windows.UI.Xaml;
@@ -15,10 +16,15 @@ namespace levyke
 {
     public sealed partial class MainPage : Page
     {
-        private ObservableCollection<StorageFile> _tracks = new ObservableCollection<StorageFile>();
+        private ObservableCollection<TrackItem> _tracks = new ObservableCollection<TrackItem>();
+        private ObservableCollection<ArtistItem> _artists = new ObservableCollection<ArtistItem>();
+        private ObservableCollection<AlbumItem> _albums = new ObservableCollection<AlbumItem>();
         private DispatcherTimer _positionTimer;
         private List<ColorPalette> _themes;
         private bool _userIsSeeking = false;
+        private string _currentAlbumName;
+        private ObservableCollection<TrackItem> _currentAlbumTracks = new ObservableCollection<TrackItem>();
+
 
         public MainPage()
         {
@@ -38,13 +44,40 @@ namespace levyke
                 var musicFolder = KnownFolders.MusicLibrary;
                 var queryOptions = new QueryOptions(CommonFileQuery.OrderByTitle, new[]
                 {
-                    ".mp3", ".wav", ".wma", ".flac", ".m4a"
-                });
+            ".mp3", ".wav", ".wma", ".flac", ".m4a"
+        });
                 var fileQuery = musicFolder.CreateFileQueryWithOptions(queryOptions);
                 var files = await fileQuery.GetFilesAsync();
+
+                // 1. Очищаем старые данные (на всякий случай)
+                _tracks.Clear();
+
+                // 2. Загружаем треки
                 foreach (var file in files)
-                    _tracks.Add(file);
+                {
+                    var track = await TrackItem.FromFile(file);
+                    _tracks.Add(track);
+                }
+
+                // 3. НАЗНАЧАЕМ ИСТОЧНИКИ ДЛЯ ВСЕХ СПИСКОВ — ВОТ СЮДА:
                 TracksList.ItemsSource = _tracks;
+
+                // Группируем и назначаем исполнителей
+                var artists = _tracks
+                    .Select(t => t.Artist)
+                    .Distinct()
+                    .OrderBy(name => name)
+                    .ToList();
+                ArtistsList.ItemsSource = artists;
+
+                // Группируем и назначаем альбомы
+                var albums = _tracks
+                    .Where(t => t.Album != "Неизвестный альбом")
+                    .Select(t => t.Album)
+                    .Distinct()
+                    .OrderBy(name => name)
+                    .ToList();
+                AlbumsList.ItemsSource = albums;
             }
             catch (Exception ex)
             {
@@ -128,9 +161,9 @@ namespace levyke
 
         private void Track_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is StorageFile file)
+            if (e.ClickedItem is TrackItem track)
             {
-                PlayTrack(file);
+                PlayTrack(track.File);
             }
         }
 
@@ -232,10 +265,21 @@ namespace levyke
         private string FormatTime(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
 
         // === ЦВЕТОВЫЕ ТЕМЫ ===
+        private void Artist_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is ArtistItem artist)
+            {
+                PlayTrack(artist.FirstTrack.File);
+            }
+        }
 
-        public void Album_ItemClick(object sender, ItemClickEventArgs e) { }
-        public void Artist_ItemClick(object sender, ItemClickEventArgs e) { }
-
+        private void Album_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is AlbumItem album)
+            {
+                PlayTrack(album.FirstTrack.File);
+            }
+        }
         private void LoadThemes()
         {
             _themes = ThemeProvider.GetThemes();
@@ -265,6 +309,40 @@ namespace levyke
                 FullPlayerOverlay.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
                 ProgressSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
             }
+        }
+
+        private void GroupTracks()
+        {
+            // Группировка по исполнителям
+            var artistGroups = _tracks
+                .GroupBy(t => t.Artist)
+                .Select(g => new ArtistItem
+                {
+                    Name = g.Key,
+                    FirstTrack = g.First()
+                })
+                .OrderBy(a => a.Name)
+                .ToList();
+
+            _artists.Clear();
+            foreach (var artist in artistGroups)
+                _artists.Add(artist);
+
+            // Группировка по альбомам
+            var albumGroups = _tracks
+                .GroupBy(t => t.Album)
+                .Where(g => g.Key != "Неизвестный альбом") // опционально
+                .Select(g => new AlbumItem
+                {
+                    Name = g.Key,
+                    FirstTrack = g.First()
+                })
+                .OrderBy(a => a.Name)
+                .ToList();
+
+            _albums.Clear();
+            foreach (var album in albumGroups)
+                _albums.Add(album);
         }
     }
 }

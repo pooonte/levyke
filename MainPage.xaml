@@ -8,10 +8,7 @@
     mc:Ignorable="d"
     Background="{StaticResource MainBackgroundBrush}">
 
-    <!-- ЕДИНСТВЕННЫЙ корневой элемент -->
     <Grid>
-
-        <!-- Основной контент -->
         <Grid x:Name="MainContent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="9*"/>
@@ -20,14 +17,56 @@
             <TextBlock Text="levyke" x:Name="MainName" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Pivot Margin="0,53,0,0" Grid.RowSpan="2">
                 <PivotItem Header="Медиатека" FontSize="22">
-                    <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
+                    <ListView x:Name="TracksList" 
+          ItemClick="Track_ItemClick" 
+          IsItemClickEnabled="True"
+          Background="Transparent">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
+                                <Grid Height="40" Margin="0,4">
+                                    <TextBlock VerticalAlignment="Stretch"
+                           TextWrapping="Wrap"
+                           MaxWidth="280">
+                    <Run Text="{Binding Title}"
+                         Foreground="White"
+                         FontSize="14"/>
+                    <LineBreak />
+                    <Run Text="{Binding Artist}"
+                         Foreground="White"
+                         FontSize="12"/>
+                    <Run Text=" --- "
+                         Foreground="White"
+                         FontSize="12"/>
+                    <Run Text="{Binding Album}"
+                         Foreground="White"
+                         FontSize="12"/>
+                                    </TextBlock>
+                                </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
                 </PivotItem>
+
+                <PivotItem Header="Исполнители" FontSize="22">
+                    <ListView x:Name="ArtistsList" ItemClick="Artist_ItemClick" IsItemClickEnabled="True" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Foreground="White" FontSize="16" Margin="16,8" TextTrimming="CharacterEllipsis"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </PivotItem>
+
+                <PivotItem Header="Альбомы" FontSize="22">
+                    <ListView x:Name="AlbumsList" ItemClick="Album_ItemClick" IsItemClickEnabled="True" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Foreground="White" FontSize="16" Margin="16,8" TextTrimming="CharacterEllipsis"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </PivotItem>
+
                 <PivotItem Header="Настройки">
                     <StackPanel>
                         <TextBlock Text="Выберите тему:"
