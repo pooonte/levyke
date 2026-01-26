@@ -8,85 +8,166 @@
     mc:Ignorable="d"
     Background="{StaticResource MainBackgroundBrush}">
 
+    <!-- ЕДИНСТВЕННЫЙ корневой элемент -->
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="9*"/>
-            <RowDefinition Height="55*"/>
-        </Grid.RowDefinitions>
-        <TextBlock Text="levyke" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Pivot Margin="0,53,0,0" Grid.RowSpan="2">
-            <PivotItem Header="Медиатека" FontSize="22">
-                <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </PivotItem>
- <!--           <PivotItem Header="Исполнители" FontSize="22">
-                <ListView x:Name="NameList" ItemClick="Names_ItemClick" IsItemClickEnabled="True">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </PivotItem>
-            <PivotItem Header="Альбомы" FontSize="22">
-                <ListView x:Name="AlbumList" ItemClick="Albums_ItemClick" IsItemClickEnabled="True">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </PivotItem> -->
-            <PivotItem Header="Тема">
-                <StackPanel Padding="20" Margin="16">
-                    <TextBlock Text="Выберите тему"
-                           Foreground="White" />
 
-                    <ComboBox x:Name="ThemeSelector"
-                          SelectionChanged="ThemeSelector_SelectionChanged"
-                          Foreground="{StaticResource AppTitleBrush}"
-                          Background="{StaticResource MiniPlayerBackgroundBrush}" />
-                </StackPanel>
-            </PivotItem>
-        </Pivot>
-        <Grid x:Name="MiniPlayerPanel"
-          VerticalAlignment="Bottom"
-          Background="{StaticResource MiniPlayerBackgroundBrush}"
-          Height="60"
-          Visibility="Collapsed" Grid.Row="1">
-
-            <Button x:Name="OpenPlayerButton"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                Background="Transparent"
-                BorderThickness="0"
-                Width="250"
-                Click="OpenPlayerButton_Click">
-                <StackPanel Orientation="Horizontal" Margin="12,0">
-                    <Image x:Name="MiniAlbumArt" Width="40" Height="40" Stretch="UniformToFill"/>
-                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                        <TextBlock x:Name="MiniTrackTitle" Foreground="White" FontSize="14" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock x:Name="MiniTrackArtist" Foreground="Gray" FontSize="12" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+        <!-- Основной контент -->
+        <Grid x:Name="MainContent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="9*"/>
+                <RowDefinition Height="55*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="levyke" x:Name="MainName" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Pivot Margin="0,53,0,0" Grid.RowSpan="2">
+                <PivotItem Header="Медиатека" FontSize="22">
+                    <ListView x:Name="TracksList" ItemClick="Track_ItemClick" IsItemClickEnabled="True">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </PivotItem>
+                <PivotItem Header="Настройки">
+                    <StackPanel>
+                        <TextBlock Text="Выберите тему:"
+                                   Foreground="White"
+                                   Margin="15,15,100,15" Height="24"/>
+                        <ComboBox x:Name="ThemeSelector"
+                                  SelectionChanged="ThemeSelector_SelectionChanged"
+                                  Foreground="White"
+                                  Background="{StaticResource MiniPlayerBackgroundBrush}" Width="222"
+                                  Margin="14,0,0,0"/>
                     </StackPanel>
-                </StackPanel>
-            </Button>
+                </PivotItem>
+            </Pivot>
+            <Grid x:Name="MiniPlayerPanel"
+                  VerticalAlignment="Bottom"
+                  Background="{StaticResource MiniPlayerBackgroundBrush}"
+                  Height="60"
+                  Visibility="Collapsed" Grid.Row="1">
+                <Button x:Name="OpenPlayerButton"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Width="250"
+                        Click="OpenPlayerButton_Click">
+                    <StackPanel Orientation="Horizontal" Margin="12,0">
+                        <Image x:Name="MiniAlbumArt" Width="40" Height="40" Stretch="UniformToFill"/>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                            <TextBlock x:Name="MiniTrackTitle" Foreground="White" FontSize="14" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MiniTrackArtist" Foreground="White" FontSize="12" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="MiniPlayButton"
+                        Content="▶"
+                        FontSize="18"
+                        Width="40"
+                        Height="40"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,16,0"
+                        Background="{StaticResource PlaybackControlBrush}"
+                        Foreground="{StaticResource PlaybackControlForegroundBrush}"
+                        Click="MiniPlayButton_Click"/>
+            </Grid>
+        </Grid>
 
-            <Button x:Name="MiniPlayButton"
-                Content="▶"
-                FontSize="18"
-                Width="40"
-                Height="40"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Margin="0,0,16,0"
-                Background="{StaticResource PlaybackControlBrush}"
-                Foreground="{StaticResource PlaybackControlForegroundBrush}"
-                Click="MiniPlayButton_Click"/>
+        <!-- Полноэкранный плеер (оверлей) -->
+        <Grid x:Name="FullPlayerOverlay"
+              Visibility="Collapsed"
+              Background="{StaticResource MainBackgroundBrush}"
+              Canvas.ZIndex="100">
+
+            <Image x:Name="FullAlbumArt"
+                   Width="140"
+                   Height="140"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Bottom"
+                   Margin="20,0,0,120"/>
+
+            <Button x:Name="BackButton"
+                    Content="←"
+                    FontSize="24"
+                    Width="50"
+                    Height="50"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="16,16,0,0"
+                    Background="Transparent"
+                    Foreground="White"
+                    Click="BackButton_Click"/>
+
+            <TextBlock x:Name="FullTrackTitle"
+                       Foreground="White"
+                       FontSize="24"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom"
+                       Margin="170,0,0,200"
+                       MaxWidth="300"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock x:Name="FullTrackArtist"
+                       Foreground="White"
+                       FontSize="18"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom"
+                       Margin="170,0,0,180"
+                       MaxWidth="300"
+                       TextWrapping="Wrap"/>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Margin="15,0,0,60">
+                <TextBlock x:Name="CurrentTimeText" 
+                           Text="0:00" 
+                           Foreground="White" 
+                           Margin="0,0,10,0"/>
+                <Slider x:Name="ProgressSlider"
+                        Width="250"
+                        Height="30"
+                        Foreground="{StaticResource AppTitleBrush}"
+                        ValueChanged="ProgressSlider_ValueChanged"/>
+                <TextBlock x:Name="TotalTimeText" 
+                           Text="0:00" 
+                           Foreground="White" 
+                           Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Margin="10,0,0,10">
+                <Button x:Name="PrevButton" 
+                        Content="⏮" 
+                        Click="PrevButton_Click" 
+                        Background="Transparent" 
+                        Foreground="{StaticResource AppTitleBrush}" 
+                        FontSize="24" 
+                        Margin="0,0,10,0"/>
+                <Button x:Name="PlayPauseButton" 
+                        Content="⏸" 
+                        Click="PlayPauseButton_Click" 
+                        Background="Transparent" 
+                        Foreground="{StaticResource AppTitleBrush}" 
+                        FontSize="24"/>
+                <Button x:Name="NextButton" 
+                        Content="⏭" 
+                        Click="NextButton_Click" 
+                        Background="Transparent" 
+                        Foreground="{StaticResource AppTitleBrush}" 
+                        FontSize="24"/>
+                <Button x:Name="RepeatButton" 
+                        Content="⊞" 
+                        Click="RepeatButton_Click"
+                        Background="Transparent" 
+                        Foreground="{StaticResource AppTitleBrush}" 
+                        FontSize="24" 
+                        Margin="10,0,0,0"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

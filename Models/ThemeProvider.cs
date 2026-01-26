@@ -11,31 +11,49 @@ namespace levyke.Services
             {
                 new ColorPalette
                 {
-                    Name = "Пурпурный рассвет",
+                    Name = "Кровавая роза",
+                    MainBackground = "#70224C",
+                    AppTitle = "#B63055",
+                    MiniPlayerBackground = "#932951",
+                    PlaybackControl = "#932951",
+                    PlaybackControlForeground = "#A52D53"
+                },
+                new ColorPalette
+                {
+                    Name = "Тихий грибной лес",
                     MainBackground = "#3E2D5A",
                     AppTitle = "#529399",
-                    MiniPlayerBackground = "#48607A",
-                    PlaybackControl = "#57ACA7",
-                    PlaybackControlForeground = "#61DFC9"
+                    MiniPlayerBackground = "#43476A",
+                    PlaybackControl = "#43476A",
+                    PlaybackControlForeground = "#48607A"
                 },
                 new ColorPalette
                 {
-                    Name = "Тёмная (бирюзовая)",
-                    MainBackground = "#001F3F",
-                    AppTitle = "#E0F7FA",
-                    MiniPlayerBackground = "#003366",
-                    PlaybackControl = "#7FDBFF",
-                    PlaybackControlForeground = "#001F3F"
+                    Name = "Светлая гавань",
+                    MainBackground = "#0E4363",
+                    AppTitle = "#2199E5",
+                    MiniPlayerBackground = "#253FA0",
+                    PlaybackControl = "#253FA0",
+                    PlaybackControlForeground = "#245DB7"
                 },
                 new ColorPalette
                 {
-                    Name = "Светлая",
-                    MainBackground = "#FFFFFF",
-                    AppTitle = "#000000",
-                    MiniPlayerBackground = "#F5F5F5",
-                    PlaybackControl = "#6200EE",
-                    PlaybackControlForeground = "#FFFFFF"
-                }
+                    Name = "Miku????",
+                    MainBackground = "#373b3e",
+                    AppTitle = "#86cecb",
+                    MiniPlayerBackground = "#137a7f",
+                    PlaybackControl = "#137a7f",
+                    PlaybackControlForeground = "#e12885"
+                },
+               new ColorPalette
+               {
+                    Name = "Teto????",
+                    MainBackground = "#3f4750",
+                    AppTitle = "#ff0045",
+                    MiniPlayerBackground = "#06053b",
+                    PlaybackControl = "#06053b",
+                    PlaybackControlForeground = "#d924d5"
+               },
             };
         }
     }

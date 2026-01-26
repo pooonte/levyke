@@ -1,6 +1,5 @@
 ﻿using Windows.UI;
 using Windows.UI.Xaml.Media;
-using Windows.Storage;
 using levyke.Models;
 using Windows.UI.Xaml;
 using System;
@@ -13,14 +12,19 @@ namespace levyke.Services
         public static void Apply(ColorPalette palette)
         {
             var r = Application.Current.Resources;
+            var newBrush = new SolidColorBrush(HexToColor(palette.MainBackground));
+            r["MainBackgroundBrush"] = newBrush;
+
             r["MainBackgroundBrush"] = new SolidColorBrush(HexToColor(palette.MainBackground));
-            r["AppTitleBrush"] = new SolidColorBrush(HexToColor(palette.AppTitle));
             r["MiniPlayerBackgroundBrush"] = new SolidColorBrush(HexToColor(palette.MiniPlayerBackground));
             r["PlaybackControlBrush"] = new SolidColorBrush(HexToColor(palette.PlaybackControl));
             r["PlaybackControlForegroundBrush"] = new SolidColorBrush(HexToColor(palette.PlaybackControlForeground));
+            r["AppTitleBrush"] = new SolidColorBrush(HexToColor(palette.AppTitle));
+
+            var color = ((SolidColorBrush)r["MainBackgroundBrush"]).Color;
+            System.Diagnostics.Debug.WriteLine($"✅ Новый фон: #{color.R:X2}{color.G:X2}{color.B:X2}");
         }
 
-        // Преобразует "#FF5733" → Color
         public static Color HexToColor(string hex)
         {
             hex = hex.Replace("#", "");
