@@ -24,6 +24,7 @@ namespace levyke
         private bool _userIsSeeking = false;
         private string _currentAlbumName;
         private ObservableCollection<TrackItem> _currentAlbumTracks = new ObservableCollection<TrackItem>();
+        private int _currentTrackIndex = -1;
 
 
         public MainPage()
@@ -89,6 +90,12 @@ namespace levyke
         private async void PlayTrack(StorageFile file)
         {
             if (file == null) return;
+            var trackItem = _tracks.FirstOrDefault(t => t.File == file);
+            if (trackItem != null)
+            {
+                _currentTrackIndex = _tracks.IndexOf(trackItem);
+            }
+
             try
             {
                 MediaPlayerSingleton.PlayFile(file);
@@ -217,12 +224,24 @@ namespace levyke
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: реализовать переход к предыдущему треку
+            if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
+
+            _currentTrackIndex--;
+            if (_currentTrackIndex < 0)
+                _currentTrackIndex = _tracks.Count - 1; // зацикливание
+
+            PlayTrack(_tracks[_currentTrackIndex].File);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: реализовать переход к следующему треку
+            if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
+
+            _currentTrackIndex++;
+            if (_currentTrackIndex >= _tracks.Count)
+                _currentTrackIndex = 0; // зацикливание
+
+            PlayTrack(_tracks[_currentTrackIndex].File);
         }
 
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
