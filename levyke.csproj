@@ -146,10 +146,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\DefaultAlbum.png" />
-    <Content Include="Assets\ffwd.png" />
+    <Content Include="Assets\next.png" />
     <Content Include="Assets\pause.png" />
     <Content Include="Assets\play.png" />
-    <Content Include="Assets\rew.png" />
+    <Content Include="Assets\prev.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />

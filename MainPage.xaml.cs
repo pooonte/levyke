@@ -5,8 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using Windows.Devices.Enumeration;
+using Windows.Devices.SerialCommunication;
 using Windows.Storage;
 using Windows.Storage.Search;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -90,80 +94,49 @@ namespace levyke
         private async void PlayTrack(StorageFile file)
         {
             if (file == null) return;
-            var trackItem = _tracks.FirstOrDefault(t => t.File == file);
-            if (trackItem != null)
-            {
-                _currentTrackIndex = _tracks.IndexOf(trackItem);
-            }
 
+            // Находим TrackItem по файлу
+            var track = _tracks.FirstOrDefault(t => t.File == file);
+            if (track == null) return;
+
+            // Запоминаем индекс для Prev/Next
+            _currentTrackIndex = _tracks.IndexOf(track);
+
+            // === ВОСПРОИЗВОДИМ ===
+            MediaPlayerSingleton.PlayFile(file);
+
+            // === ОБНОВЛЯЕМ МИНИ-ПЛЕЕР ===
+            MiniTrackTitle.Text = track.Title;
+            MiniTrackArtist.Text = track.Artist;
+
+            // === ОБНОВЛЯЕМ ПОЛНОЭКРАННЫЙ ПЛЕЕР ===
+            FullTrackTitle.Text = track.Title;
+            FullTrackArtist.Text = track.Artist;
+
+            // === ОБЛОЖКА ===
             try
             {
-                MediaPlayerSingleton.PlayFile(file);
-
-                MiniTrackTitle.Text = file.DisplayName;
-                MiniTrackArtist.Text = "Локальный трек";
-
-                try
+                var thumb = await file.GetThumbnailAsync(
+                    Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
+                if (thumb != null && thumb.Size > 0)
                 {
-                    var musicInfo = await MusicTagHelper.GetMusicInfo(file);
-
-                    MiniTrackTitle.Text = musicInfo.Title;
-                    MiniTrackArtist.Text = musicInfo.Artist;
-
-                    if (!string.IsNullOrEmpty(musicInfo.Album) && musicInfo.Album != "Неизвестный альбом")
-                    {
-                        // Можно добавить отображение альбома
-                    }
-
-                    UpdatePlayButtonState();
-                }
-                catch (Exception ex)
-                {
-                    try
-                    {
-                        MiniTrackTitle.Text = file.DisplayName;
-                        MiniTrackArtist.Text = "Локальный трек";
-
-                        var props = await file.Properties.RetrievePropertiesAsync(
-                            new[] { "System.Music.Title", "System.Music.Artist" });
-                        if (props["System.Music.Title"] is string title && !string.IsNullOrWhiteSpace(title))
-                            MiniTrackTitle.Text = title;
-                        if (props["System.Music.Artist"] is string artist && !string.IsNullOrWhiteSpace(artist))
-                            MiniTrackArtist.Text = artist;
-                    }
-                    catch
-                    {
-                        MiniTrackTitle.Text = System.IO.Path.GetFileNameWithoutExtension(file.Name);
-                        MiniTrackArtist.Text = "Неизвестный исполнитель";
-                    }
-                }
-
-                try
-                {
-                    var thumb = await file.GetThumbnailAsync(
-                        Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
-                    if (thumb != null && thumb.Size > 0)
-                    {
-                        var bitmap = new BitmapImage();
-                        await bitmap.SetSourceAsync(thumb);
-                        MiniAlbumArt.Source = bitmap;
-                    }
-                }
-                catch { }
-
-                MiniPlayerPanel.Visibility = Visibility.Visible;
-                UpdatePlayButtonState();
-
-                // Запускаем таймер, если ещё не запущен
-                if (_positionTimer == null)
-                {
-                    StartPositionTimer();
+                    var bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(thumb);
+                    MiniAlbumArt.Source = bitmap;
+                    FullAlbumArt.Source = bitmap;
                 }
             }
-            catch (Exception ex)
-            {
-                await new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}").ShowAsync();
-            }
+            catch { }
+
+            // === ПОКАЗЫВАЕМ МИНИ-ПЛЕЕР ===
+            MiniPlayerPanel.Visibility = Visibility.Visible;
+
+            // === ОБНОВЛЯЕМ КНОПКИ ===
+            UpdatePlayButtonState();
+
+            // === ЗАПУСКАЕМ ТАЙМЕР ===
+            if (_positionTimer == null)
+                StartPositionTimer();
         }
 
         private void Track_ItemClick(object sender, ItemClickEventArgs e)
@@ -225,23 +198,15 @@ namespace levyke
         private void PrevButton_Click(object sender, RoutedEventArgs e)
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
-
-            _currentTrackIndex--;
-            if (_currentTrackIndex < 0)
-                _currentTrackIndex = _tracks.Count - 1; // зацикливание
-
-            PlayTrack(_tracks[_currentTrackIndex].File);
+            _currentTrackIndex = Math.Max(0, _currentTrackIndex - 1);
+            PlayTrack(_tracks[_currentTrackIndex].File); // ← вызывает обновление
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
-
-            _currentTrackIndex++;
-            if (_currentTrackIndex >= _tracks.Count)
-                _currentTrackIndex = 0; // зацикливание
-
-            PlayTrack(_tracks[_currentTrackIndex].File);
+            _currentTrackIndex = Math.Min(_tracks.Count - 1, _currentTrackIndex + 1);
+            PlayTrack(_tracks[_currentTrackIndex].File); // ← вызывает обновление
         }
 
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
@@ -362,6 +327,33 @@ namespace levyke
             _albums.Clear();
             foreach (var album in albumGroups)
                 _albums.Add(album);
+        }
+        public class SimpleArduinoService
+        {
+            private SerialDevice _serial;
+
+            public async Task SendToArduino(string text)
+            {
+                // Подключение
+                var devices = await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
+                if (devices.Count == 0) return;
+
+                _serial = await SerialDevice.FromIdAsync(devices[0].Id);
+                _serial.BaudRate = 115200;
+
+                // Отправка
+                var writer = new DataWriter(_serial.OutputStream);
+                writer.WriteString(text + "\n");
+                await writer.StoreAsync();
+            }
+        }
+        // При смене трека
+        private async void OnTrackChanged(string title, string artist)
+        {
+            var arduino = new SimpleArduinoService();
+            await arduino.SendToArduino($"T:{title}");
+            await Task.Delay(100);
+            await arduino.SendToArduino($"A:{artist}");
         }
     }
 }
