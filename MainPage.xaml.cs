@@ -16,6 +16,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
+using Windows.Networking.Sockets;
+using Windows.Devices.Bluetooth.Rfcomm;
+
 namespace levyke
 {
     public sealed partial class MainPage : Page
@@ -30,6 +33,10 @@ namespace levyke
         private ObservableCollection<TrackItem> _currentAlbumTracks = new ObservableCollection<TrackItem>();
         private int _currentTrackIndex = -1;
 
+        private StreamSocket _socket;
+        private DataWriter _writer;
+        private DataReader _reader;
+
 
         public MainPage()
         {
@@ -37,8 +44,6 @@ namespace levyke
             MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
             LoadMusicFiles();
             LoadThemes();
-
-            // Останавливаем таймер при закрытии страницы
             this.Unloaded += (s, e) => _positionTimer?.Stop();
         }
 
@@ -54,20 +59,17 @@ namespace levyke
                 var fileQuery = musicFolder.CreateFileQueryWithOptions(queryOptions);
                 var files = await fileQuery.GetFilesAsync();
 
-                // 1. Очищаем старые данные (на всякий случай)
+
                 _tracks.Clear();
 
-                // 2. Загружаем треки
                 foreach (var file in files)
                 {
                     var track = await TrackItem.FromFile(file);
                     _tracks.Add(track);
                 }
 
-                // 3. НАЗНАЧАЕМ ИСТОЧНИКИ ДЛЯ ВСЕХ СПИСКОВ — ВОТ СЮДА:
                 TracksList.ItemsSource = _tracks;
 
-                // Группируем и назначаем исполнителей
                 var artists = _tracks
                     .Select(t => t.Artist)
                     .Distinct()
@@ -75,7 +77,6 @@ namespace levyke
                     .ToList();
                 ArtistsList.ItemsSource = artists;
 
-                // Группируем и назначаем альбомы
                 var albums = _tracks
                     .Where(t => t.Album != "Неизвестный альбом")
                     .Select(t => t.Album)
@@ -95,25 +96,22 @@ namespace levyke
         {
             if (file == null) return;
 
-            // Находим TrackItem по файлу
             var track = _tracks.FirstOrDefault(t => t.File == file);
             if (track == null) return;
 
-            // Запоминаем индекс для Prev/Next
             _currentTrackIndex = _tracks.IndexOf(track);
 
-            // === ВОСПРОИЗВОДИМ ===
             MediaPlayerSingleton.PlayFile(file);
 
-            // === ОБНОВЛЯЕМ МИНИ-ПЛЕЕР ===
+            var saved = ApplicationData.Current.LocalSettings.Values["SavedVolume"];
+            MediaPlayerSingleton.Player.Volume = saved is double v ? v : 1.0;
+
             MiniTrackTitle.Text = track.Title;
             MiniTrackArtist.Text = track.Artist;
 
-            // === ОБНОВЛЯЕМ ПОЛНОЭКРАННЫЙ ПЛЕЕР ===
             FullTrackTitle.Text = track.Title;
             FullTrackArtist.Text = track.Artist;
 
-            // === ОБЛОЖКА ===
             try
             {
                 var thumb = await file.GetThumbnailAsync(
@@ -128,13 +126,9 @@ namespace levyke
             }
             catch { }
 
-            // === ПОКАЗЫВАЕМ МИНИ-ПЛЕЕР ===
             MiniPlayerPanel.Visibility = Visibility.Visible;
-
-            // === ОБНОВЛЯЕМ КНОПКИ ===
             UpdatePlayButtonState();
 
-            // === ЗАПУСКАЕМ ТАЙМЕР ===
             if (_positionTimer == null)
                 StartPositionTimer();
         }
@@ -149,9 +143,15 @@ namespace levyke
 
         private void UpdatePlayButtonState()
         {
-            string content = MediaPlayerSingleton.IsPlaying ? "⏸" : "▶";
-            MiniPlayButton.Content = content;
-            PlayPauseButton.Content = content; // Обновляем и полноэкранный плеер
+            string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
+            var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
+
+            if (MiniPlayButton.Content is Image miniImage)
+            {
+                miniImage.Source = source;
+            }
+
+            FullPlayPauseIcon.Source = source;
         }
 
         private void PlaybackSession_PlaybackStateChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)
@@ -168,19 +168,14 @@ namespace levyke
             UpdatePlayButtonState();
         }
 
-        // === ПОЛНОЭКРАННЫЙ ПЛЕЕР ===
-
         private async void OpenPlayerButton_Click(object sender, RoutedEventArgs e)
         {
-            // Копируем данные из мини-плеера
             FullTrackTitle.Text = MiniTrackTitle.Text;
             FullTrackArtist.Text = MiniTrackArtist.Text;
             FullAlbumArt.Source = MiniAlbumArt.Source;
 
-            // Обновляем кнопку
-            PlayPauseButton.Content = MediaPlayerSingleton.IsPlaying ? "⏸" : "▶";
+            VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 100;
 
-            // Показываем оверлей
             FullPlayerOverlay.Visibility = Visibility.Visible;
         }
 
@@ -199,19 +194,19 @@ namespace levyke
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
             _currentTrackIndex = Math.Max(0, _currentTrackIndex - 1);
-            PlayTrack(_tracks[_currentTrackIndex].File); // ← вызывает обновление
+            PlayTrack(_tracks[_currentTrackIndex].File);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
             _currentTrackIndex = Math.Min(_tracks.Count - 1, _currentTrackIndex + 1);
-            PlayTrack(_tracks[_currentTrackIndex].File); // ← вызывает обновление
+            PlayTrack(_tracks[_currentTrackIndex].File);
         }
 
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: реализовать повтор
+            // реализовать кнопку повтора
         }
 
         private void ProgressSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -248,7 +243,6 @@ namespace levyke
 
         private string FormatTime(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
 
-        // === ЦВЕТОВЫЕ ТЕМЫ ===
         private void Artist_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is ArtistItem artist)
@@ -284,7 +278,6 @@ namespace levyke
                 ThemeService.Apply(selected);
                 ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"] = ThemeSelector.SelectedIndex;
 
-                // Обновляем цвета вручную (на всякий случай)
                 this.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
                 MiniPlayerPanel.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
                 MiniPlayButton.Background = (Brush)Application.Current.Resources["PlaybackControlBrush"];
@@ -292,12 +285,12 @@ namespace levyke
                 MainName.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
                 FullPlayerOverlay.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
                 ProgressSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
+                VolumeSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
             }
         }
 
         private void GroupTracks()
         {
-            // Группировка по исполнителям
             var artistGroups = _tracks
                 .GroupBy(t => t.Artist)
                 .Select(g => new ArtistItem
@@ -312,10 +305,9 @@ namespace levyke
             foreach (var artist in artistGroups)
                 _artists.Add(artist);
 
-            // Группировка по альбомам
             var albumGroups = _tracks
                 .GroupBy(t => t.Album)
-                .Where(g => g.Key != "Неизвестный альбом") // опционально
+                .Where(g => g.Key != "Неизвестный альбом")
                 .Select(g => new AlbumItem
                 {
                     Name = g.Key,
@@ -334,26 +326,69 @@ namespace levyke
 
             public async Task SendToArduino(string text)
             {
-                // Подключение
                 var devices = await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
                 if (devices.Count == 0) return;
 
                 _serial = await SerialDevice.FromIdAsync(devices[0].Id);
                 _serial.BaudRate = 115200;
 
-                // Отправка
                 var writer = new DataWriter(_serial.OutputStream);
                 writer.WriteString(text + "\n");
                 await writer.StoreAsync();
             }
         }
-        // При смене трека
         private async void OnTrackChanged(string title, string artist)
         {
             var arduino = new SimpleArduinoService();
             await arduino.SendToArduino($"T:{title}");
             await Task.Delay(100);
             await arduino.SendToArduino($"A:{artist}");
+        }
+        private void VolumeSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            double vol = e.NewValue / 100.0;
+            MediaPlayerSingleton.Player.Volume = vol;
+            ApplicationData.Current.LocalSettings.Values["SavedVolume"] = vol;
+        }
+        private void FullPlayerOverlay_Loaded(object sender, RoutedEventArgs e)
+        {
+            VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 30;
+        }
+        private async void ConnectToArduino()
+        {
+            try
+            {
+                string aqs = RfcommDeviceService.GetDeviceSelector(RfcommServiceId.SerialPort);
+                var devices = await DeviceInformation.FindAllAsync(aqs);
+
+                if (devices.Count == 0)
+                {
+                    await new Windows.UI.Popups.MessageDialog("Устройство не найдено").ShowAsync();
+                    return;
+                }
+
+                var device = devices[0];
+                var service = await RfcommDeviceService.FromIdAsync(device.Id);
+                if (service == null) { /* ошибка */ return; }
+
+                _socket = new StreamSocket();
+                await _socket.ConnectAsync(service.ConnectionHostName, service.ConnectionServiceName);
+
+                _writer = new DataWriter(_socket.OutputStream);
+                _reader = new DataReader(_socket.InputStream);
+
+                _writer.WriteString("Подключено к Windows!\n");
+                await _writer.StoreAsync();
+
+                uint size = await _reader.LoadAsync(1024);
+                string response = _reader.ReadString(size);
+
+                await new Windows.UI.Popups.MessageDialog($"Ответ: {response}").ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                await new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}").ShowAsync();
+            }
         }
     }
 }

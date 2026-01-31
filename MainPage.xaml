@@ -101,7 +101,6 @@
                     </StackPanel>
                 </Button>
                 <Button x:Name="MiniPlayButton"
-                        Content="▶"
                         FontSize="18"
                         Width="40"
                         Height="40"
@@ -110,14 +109,16 @@
                         Margin="0,0,16,0"
                         Background="{StaticResource PlaybackControlBrush}"
                         Foreground="{StaticResource PlaybackControlForegroundBrush}"
-                        Click="MiniPlayButton_Click"/>
+                        Click="MiniPlayButton_Click">
+                    <Image x:Name="MiniPlayPauseIcon" Width="24" Height="24"/>
+                </Button>
             </Grid>
         </Grid>
 
-        <!-- Полноэкранный плеер (оверлей) -->
         <Grid x:Name="FullPlayerOverlay"
               Visibility="Collapsed"
               Background="{StaticResource MainBackgroundBrush}"
+                    Loaded="FullPlayerOverlay_Loaded"
               Canvas.ZIndex="100">
 
             <Image x:Name="FullAlbumArt"
@@ -153,7 +154,7 @@
                        FontSize="18"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Bottom"
-                       Margin="170,0,0,180"
+                       Margin="170,0,0,177"
                        MaxWidth="300"
                        TextWrapping="Wrap"/>
 
@@ -181,24 +182,26 @@
                         VerticalAlignment="Bottom"
                         Margin="10,0,0,10">
                 <Button x:Name="PrevButton" 
-                        Content="⏮" 
                         Click="PrevButton_Click" 
                         Background="Transparent" 
                         Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24" 
-                        Margin="0,0,10,0"/>
+                        FontSize="24" >
+                    <Image x:Name="PrevButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/prev.png"/>
+                </Button>
                 <Button x:Name="PlayPauseButton" 
-                        Content="⏸" 
-                        Click="PlayPauseButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24"/>
+        Click="PlayPauseButton_Click"
+        Background="Transparent"
+        Foreground="{StaticResource AppTitleBrush}"
+        FontSize="24">
+                    <Image x:Name="FullPlayPauseIcon" Width="24" Height="24" />
+                </Button>
                 <Button x:Name="NextButton" 
-                        Content="⏭" 
                         Click="NextButton_Click" 
                         Background="Transparent" 
                         Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24"/>
+                        FontSize="24">
+                    <Image x:Name="NextButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/next.png"/>
+                </Button>
                 <Button x:Name="RepeatButton" 
                         Content="⊞" 
                         Click="RepeatButton_Click"
@@ -206,6 +209,14 @@
                         Foreground="{StaticResource AppTitleBrush}" 
                         FontSize="24" 
                         Margin="10,0,0,0"/>
+                <Slider x:Name="VolumeSlider"
+                       Margin="10,0,0,0"
+                       Width="150"
+        Minimum="0"
+        Maximum="100"
+        Value="100"
+        Foreground="{StaticResource AppTitleBrush}"
+        ValueChanged="VolumeSlider_ValueChanged"/>
             </StackPanel>
         </Grid>
     </Grid>
