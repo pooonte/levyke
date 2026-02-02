@@ -18,7 +18,6 @@ namespace levyke.Services
             r["MainBackgroundBrush"] = new SolidColorBrush(HexToColor(palette.MainBackground));
             r["MiniPlayerBackgroundBrush"] = new SolidColorBrush(HexToColor(palette.MiniPlayerBackground));
             r["PlaybackControlBrush"] = new SolidColorBrush(HexToColor(palette.PlaybackControl));
-            r["PlaybackControlForegroundBrush"] = new SolidColorBrush(HexToColor(palette.PlaybackControlForeground));
             r["AppTitleBrush"] = new SolidColorBrush(HexToColor(palette.AppTitle));
 
             var color = ((SolidColorBrush)r["MainBackgroundBrush"]).Color;

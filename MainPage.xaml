@@ -202,13 +202,6 @@
                         FontSize="24">
                     <Image x:Name="NextButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/next.png"/>
                 </Button>
-                <Button x:Name="RepeatButton" 
-                        Content="⊞" 
-                        Click="RepeatButton_Click"
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24" 
-                        Margin="10,0,0,0"/>
                 <Slider x:Name="VolumeSlider"
                        Margin="10,0,0,0"
                        Width="150"

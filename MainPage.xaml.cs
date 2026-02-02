@@ -207,6 +207,7 @@ namespace levyke
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
         {
             // реализовать кнопку повтора
+            // не забыть что была удалена из MainPage.xaml
         }
 
         private void ProgressSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
