@@ -559,5 +559,65 @@ namespace levyke
             await Task.Delay(100);
             await arduino.SendToArduino($"A:{artist}");
         }
+
+        private async void RefreshLibraryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            // Подтверждение действия
+            var dialog = new Windows.UI.Popups.MessageDialog(
+                "Обновление библиотеки пересканирует все музыкальные файлы. Это может занять несколько минут. Продолжить?",
+                "Обновление библиотеки");
+
+            dialog.Commands.Add(new Windows.UI.Popups.UICommand("Да") { Id = 0 });
+            dialog.Commands.Add(new Windows.UI.Popups.UICommand("Нет") { Id = 1 });
+            dialog.DefaultCommandIndex = 0;
+            dialog.CancelCommandIndex = 1;
+
+            var result = await dialog.ShowAsync();
+            if ((int)result.Id == 0)
+            {
+                await RefreshLibraryAsync();
+            }
+        }
+        //обновление библиотеки по кнопке
+        private async Task RefreshLibraryAsync()
+        {
+            try
+            {
+                _isLoading = true;
+                ShowLoadingIndicator(true);
+
+                System.Diagnostics.Debug.WriteLine("🔄 Принудительное обновление библиотеки...");
+
+                // Полное сканирование с игнорированием кэша
+                var cachedTracks = await MusicCacheService.FullScanAsync();
+
+                // Обновляем UI
+                ShowTracksFromCache(cachedTracks);
+
+                System.Diagnostics.Debug.WriteLine("✅ Библиотека обновлена");
+
+                // Уведомление пользователя
+                var completeDialog = new Windows.UI.Popups.MessageDialog(
+                    $"Библиотека обновлена. Найдено {cachedTracks.Count} треков.",
+                    "Готово");
+                _ = completeDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления: {ex.Message}");
+
+                var errorDialog = new Windows.UI.Popups.MessageDialog(
+                    $"Ошибка при обновлении: {ex.Message}",
+                    "Ошибка");
+                _ = errorDialog.ShowAsync();
+            }
+            finally
+            {
+                _isLoading = false;
+                ShowLoadingIndicator(false);
+            }
+        }
     }
 }

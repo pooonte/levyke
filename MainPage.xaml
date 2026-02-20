@@ -121,6 +121,21 @@
                                   Foreground="White"
                                   Background="{StaticResource MiniPlayerBackgroundBrush}" Width="222"
                                   Margin="14,0,0,0"/>
+                        <Button x:Name="RefreshLibraryButton"
+                Content="⟳ Обновить библиотеку"
+                Click="RefreshLibraryButton_Click"
+                Margin="15,30,15,0"
+                Height="45"
+                Background="{StaticResource MiniPlayerBackgroundBrush}"
+                Foreground="White"
+                BorderThickness="0"
+                FontSize="16"/>
+
+                        <TextBlock Text="При обновлении библиотеки приложение пересканирует все папки и найдет новые треки. Это может занять некоторое время."
+                   Foreground="#AAAAAA"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Margin="15,10,15,0"/>
                     </StackPanel>
                 </PivotItem>
             </Pivot>
