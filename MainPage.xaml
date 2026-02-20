@@ -15,7 +15,7 @@
                 <RowDefinition Height="55*"/>
             </Grid.RowDefinitions>
             <TextBlock Text="levyke" x:Name="MainName" Foreground="{StaticResource AppTitleBrush}" Margin="16,16,0,0" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <Pivot Margin="0,53,0,0" Grid.RowSpan="2">
+            <Pivot Margin="0,53,0,0" Grid.RowSpan="2" x:Name="MainPivot">
                 <PivotItem Header="Медиатека" FontSize="22">
                     <ListView x:Name="TracksList" 
           ItemClick="Track_ItemClick" 

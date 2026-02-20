@@ -15,7 +15,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-
 using Windows.Networking.Sockets;
 using Windows.Devices.Bluetooth.Rfcomm;
 
@@ -23,83 +22,217 @@ namespace levyke
 {
     public sealed partial class MainPage : Page
     {
+        // UI коллекции
         private ObservableCollection<TrackItem> _tracks = new ObservableCollection<TrackItem>();
         private ObservableCollection<ArtistItem> _artists = new ObservableCollection<ArtistItem>();
         private ObservableCollection<AlbumItem> _albums = new ObservableCollection<AlbumItem>();
-        private DispatcherTimer _positionTimer;
-        private List<ColorPalette> _themes;
-        private bool _userIsSeeking = false;
-        private string _currentAlbumName;
-        private ObservableCollection<TrackItem> _currentAlbumTracks = new ObservableCollection<TrackItem>();
-        private int _currentTrackIndex = -1;
 
+        // Плеер
+        private DispatcherTimer _positionTimer;
+        private int _currentTrackIndex = -1;
+        private bool _userIsSeeking = false;
+
+        // Темы
+        private List<ColorPalette> _themes;
+
+        // Состояние загрузки
+        private bool _isLoading = false;
+        private bool _isInitialized = false; // Флаг, что библиотека загружена
+
+        // Arduino
         private StreamSocket _socket;
         private DataWriter _writer;
         private DataReader _reader;
-
 
         public MainPage()
         {
             this.InitializeComponent();
             MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-            LoadMusicFiles();
+
+            // Запускаем инициализацию библиотеки
+            _ = InitializeLibraryAsync();
+
             LoadThemes();
             this.Unloaded += (s, e) => _positionTimer?.Stop();
         }
 
-        private async void LoadMusicFiles()
+        // === ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ===
+        private async Task InitializeLibraryAsync()
         {
+            if (_isLoading) return;
+            _isLoading = true;
+
             try
             {
-                var musicFolder = KnownFolders.MusicLibrary;
-                var queryOptions = new QueryOptions(CommonFileQuery.OrderByTitle, new[]
+                System.Diagnostics.Debug.WriteLine("=== ИНИЦИАЛИЗАЦИЯ БИБЛИОТЕКИ ===");
+
+                // 1. Проверяем наличие кэша
+                bool hasCache = await MusicCacheService.HasCacheAsync();
+
+                List<CachedTrack> cachedTracks;
+
+                if (hasCache)
                 {
-            ".mp3", ".wav", ".wma", ".flac", ".m4a"
-        });
-                var fileQuery = musicFolder.CreateFileQueryWithOptions(queryOptions);
-                var files = await fileQuery.GetFilesAsync();
+                    // 2. БЫСТРО загружаем из кэша
+                    System.Diagnostics.Debug.WriteLine("📖 Загрузка из кэша...");
+                    cachedTracks = await MusicCacheService.LoadCacheAsync();
 
+                    // 3. СРАЗУ показываем пользователю
+                    ShowTracksFromCache(cachedTracks);
 
-                _tracks.Clear();
+                    // 4. В ФОНЕ проверяем новые файлы
+                    System.Diagnostics.Debug.WriteLine("🔄 Фоновая проверка обновлений...");
 
-                foreach (var file in files)
+                    // Не ждём эту задачу
+                    _ = Task.Run(async () =>
+                    {
+                        var updatedTracks = await MusicCacheService.QuickCheckAsync(cachedTracks);
+
+                        // Если есть изменения - обновляем UI
+                        if (updatedTracks.Count != cachedTracks.Count)
+                        {
+                            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                            {
+                                ShowTracksFromCache(updatedTracks);
+                            });
+                        }
+                    });
+                }
+                else
                 {
-                    var track = await TrackItem.FromFile(file);
-                    _tracks.Add(track);
+                    // 5. ПЕРВЫЙ ЗАПУСК - полное сканирование
+                    System.Diagnostics.Debug.WriteLine("🔍 Первый запуск, сканирование...");
+                    ShowLoadingIndicator(true);
+
+                    cachedTracks = await MusicCacheService.FullScanAsync();
+
+                    ShowTracksFromCache(cachedTracks);
+                    ShowLoadingIndicator(false);
                 }
 
-                TracksList.ItemsSource = _tracks;
-
-                var artists = _tracks
-                    .Select(t => t.Artist)
-                    .Distinct()
-                    .OrderBy(name => name)
-                    .ToList();
-                ArtistsList.ItemsSource = artists;
-
-                var albums = _tracks
-                    .Where(t => t.Album != "Неизвестный альбом")
-                    .Select(t => t.Album)
-                    .Distinct()
-                    .OrderBy(name => name)
-                    .ToList();
-                AlbumsList.ItemsSource = albums;
+                _isInitialized = true;
+                System.Diagnostics.Debug.WriteLine("=== ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА ===");
             }
             catch (Exception ex)
             {
-                var dialog = new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}");
-                _ = dialog.ShowAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
+        // === ПОКАЗ ТРЕКОВ ИЗ КЭША ===
+        private void ShowTracksFromCache(List<CachedTrack> cachedTracks)
+        {
+            // Очищаем текущие коллекции
+            _tracks.Clear();
+            _artists.Clear();
+            _albums.Clear();
+
+            // Временные множества для группировки
+            var artistDict = new Dictionary<string, List<TrackItem>>();
+            var albumDict = new Dictionary<string, List<TrackItem>>();
+
+            // Создаём TrackItem из кэша
+            foreach (var cached in cachedTracks)
+            {
+                var track = new TrackItem
+                {
+                    FilePath = cached.FilePath,
+                    Title = cached.Title,
+                    Artist = cached.Artist,
+                    Album = cached.Album,
+                    Duration = TimeSpan.Parse(cached.Duration)
+                };
+
+                // Пытаемся восстановить StorageFile позже, при воспроизведении
+
+                _tracks.Add(track);
+
+                // Группируем для ArtistItem и AlbumItem
+                if (!artistDict.ContainsKey(track.Artist))
+                    artistDict[track.Artist] = new List<TrackItem>();
+                artistDict[track.Artist].Add(track);
+
+                if (!albumDict.ContainsKey(track.Album))
+                    albumDict[track.Album] = new List<TrackItem>();
+                albumDict[track.Album].Add(track);
+            }
+
+            // Создаём ArtistItem
+            foreach (var kvp in artistDict.OrderBy(k => k.Key))
+            {
+                _artists.Add(new ArtistItem
+                {
+                    Name = kvp.Key,
+                    FirstTrack = kvp.Value.First(),
+                    TrackCount = kvp.Value.Count
+                });
+            }
+
+            // Создаём AlbumItem (исключая "Неизвестный альбом")
+            foreach (var kvp in albumDict
+                .Where(k => k.Key != "Неизвестный альбом")
+                .OrderBy(k => k.Key))
+            {
+                _albums.Add(new AlbumItem
+                {
+                    Name = kvp.Key,
+                    Artist = kvp.Value.First().Artist,
+                    FirstTrack = kvp.Value.First(),
+                    TrackCount = kvp.Value.Count
+                });
+            }
+
+            // Обновляем UI
+            TracksList.ItemsSource = _tracks;
+            ArtistsList.ItemsSource = _artists;
+            AlbumsList.ItemsSource = _albums;
+
+            System.Diagnostics.Debug.WriteLine($"📊 Показано: {_tracks.Count} треков, {_artists.Count} исполнителей, {_albums.Count} альбомов");
+        }
+
+        // === КНОПКА ОБНОВЛЕНИЯ (добавь в XAML при необходимости) ===
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            var dialog = new Windows.UI.Popups.MessageDialog(
+                "Обновление пересканирует все файлы. Это может занять некоторое время. Продолжить?",
+                "Обновление библиотеки");
+
+            dialog.Commands.Add(new Windows.UI.Popups.UICommand("Да") { Id = 0 });
+            dialog.Commands.Add(new Windows.UI.Popups.UICommand("Нет") { Id = 1 });
+
+            var result = await dialog.ShowAsync();
+            if ((int)result.Id == 0)
+            {
+                ShowLoadingIndicator(true);
+                var tracks = await MusicCacheService.FullScanAsync();
+                ShowTracksFromCache(tracks);
+                ShowLoadingIndicator(false);
+            }
+        }
+
+        // === ВСПОМОГАТЕЛЬНЫЙ МЕТОД ===
+        private void ShowLoadingIndicator(bool show)
+        {
+            if (MainPivot != null)
+                MainPivot.IsEnabled = !show;
+        }
+
+        // === PlayTrack (с восстановлением StorageFile) ===
         private async void PlayTrack(StorageFile file)
         {
             if (file == null) return;
 
-            var track = _tracks.FirstOrDefault(t => t.File == file);
+            var track = _tracks.FirstOrDefault(t => t.FilePath == file.Path);
             if (track == null) return;
 
             _currentTrackIndex = _tracks.IndexOf(track);
+            track.File = file; // Сохраняем StorageFile
 
             MediaPlayerSingleton.PlayFile(file);
 
@@ -133,14 +266,83 @@ namespace levyke
                 StartPositionTimer();
         }
 
-        private void Track_ItemClick(object sender, ItemClickEventArgs e)
+        // === Track_ItemClick с восстановлением файла ===
+        private async void Track_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is TrackItem track)
             {
-                PlayTrack(track.File);
+                try
+                {
+                    // Пытаемся получить файл по сохранённому пути
+                    var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
+                    PlayTrack(file);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Не удалось открыть файл: {ex.Message}");
+
+                    // Если файл не найден, удаляем его из коллекции
+                    _tracks.Remove(track);
+
+                    // Пересобираем исполнителей и альбомы
+                    UpdateArtistsAndAlbums();
+                }
             }
         }
 
+        private void Artist_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is ArtistItem artist)
+            {
+                PlayTrack(artist.FirstTrack.File);
+            }
+        }
+
+        private void Album_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is AlbumItem album)
+            {
+                PlayTrack(album.FirstTrack.File);
+            }
+        }
+
+        private void UpdateArtistsAndAlbums()
+        {
+            _artists.Clear();
+            _albums.Clear();
+
+            var artistGroups = _tracks
+                .GroupBy(t => t.Artist)
+                .Select(g => new ArtistItem
+                {
+                    Name = g.Key,
+                    FirstTrack = g.First(),
+                    TrackCount = g.Count()
+                })
+                .OrderBy(a => a.Name)
+                .ToList();
+
+            foreach (var artist in artistGroups)
+                _artists.Add(artist);
+
+            var albumGroups = _tracks
+                .GroupBy(t => t.Album)
+                .Where(g => g.Key != "Неизвестный альбом")
+                .Select(g => new AlbumItem
+                {
+                    Name = g.Key,
+                    Artist = g.First().Artist,
+                    FirstTrack = g.First(),
+                    TrackCount = g.Count()
+                })
+                .OrderBy(a => a.Name)
+                .ToList();
+
+            foreach (var album in albumGroups)
+                _albums.Add(album);
+        }
+
+        // === ВСЕ ОСТАЛЬНЫЕ МЕТОДЫ БЕЗ ИЗМЕНЕНИЙ ===
         private void UpdatePlayButtonState()
         {
             string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
@@ -194,20 +396,28 @@ namespace levyke
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
             _currentTrackIndex = Math.Max(0, _currentTrackIndex - 1);
-            PlayTrack(_tracks[_currentTrackIndex].File);
+
+            var track = _tracks[_currentTrackIndex];
+            try
+            {
+                var file = StorageFile.GetFileFromPathAsync(track.FilePath).AsTask().Result;
+                PlayTrack(file);
+            }
+            catch { }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
             _currentTrackIndex = Math.Min(_tracks.Count - 1, _currentTrackIndex + 1);
-            PlayTrack(_tracks[_currentTrackIndex].File);
-        }
 
-        private void RepeatButton_Click(object sender, RoutedEventArgs e)
-        {
-            // реализовать кнопку повтора
-            // не забыть что была удалена из MainPage.xaml
+            var track = _tracks[_currentTrackIndex];
+            try
+            {
+                var file = StorageFile.GetFileFromPathAsync(track.FilePath).AsTask().Result;
+                PlayTrack(file);
+            }
+            catch { }
         }
 
         private void ProgressSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -244,21 +454,6 @@ namespace levyke
 
         private string FormatTime(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
 
-        private void Artist_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is ArtistItem artist)
-            {
-                PlayTrack(artist.FirstTrack.File);
-            }
-        }
-
-        private void Album_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is AlbumItem album)
-            {
-                PlayTrack(album.FirstTrack.File);
-            }
-        }
         private void LoadThemes()
         {
             _themes = ThemeProvider.GetThemes();
@@ -290,71 +485,18 @@ namespace levyke
             }
         }
 
-        private void GroupTracks()
-        {
-            var artistGroups = _tracks
-                .GroupBy(t => t.Artist)
-                .Select(g => new ArtistItem
-                {
-                    Name = g.Key,
-                    FirstTrack = g.First()
-                })
-                .OrderBy(a => a.Name)
-                .ToList();
-
-            _artists.Clear();
-            foreach (var artist in artistGroups)
-                _artists.Add(artist);
-
-            var albumGroups = _tracks
-                .GroupBy(t => t.Album)
-                .Where(g => g.Key != "Неизвестный альбом")
-                .Select(g => new AlbumItem
-                {
-                    Name = g.Key,
-                    FirstTrack = g.First()
-                })
-                .OrderBy(a => a.Name)
-                .ToList();
-
-            _albums.Clear();
-            foreach (var album in albumGroups)
-                _albums.Add(album);
-        }
-        public class SimpleArduinoService
-        {
-            private SerialDevice _serial;
-
-            public async Task SendToArduino(string text)
-            {
-                var devices = await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
-                if (devices.Count == 0) return;
-
-                _serial = await SerialDevice.FromIdAsync(devices[0].Id);
-                _serial.BaudRate = 115200;
-
-                var writer = new DataWriter(_serial.OutputStream);
-                writer.WriteString(text + "\n");
-                await writer.StoreAsync();
-            }
-        }
-        private async void OnTrackChanged(string title, string artist)
-        {
-            var arduino = new SimpleArduinoService();
-            await arduino.SendToArduino($"T:{title}");
-            await Task.Delay(100);
-            await arduino.SendToArduino($"A:{artist}");
-        }
         private void VolumeSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
             double vol = e.NewValue / 100.0;
             MediaPlayerSingleton.Player.Volume = vol;
             ApplicationData.Current.LocalSettings.Values["SavedVolume"] = vol;
         }
+
         private void FullPlayerOverlay_Loaded(object sender, RoutedEventArgs e)
         {
             VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 30;
         }
+
         private async void ConnectToArduino()
         {
             try
@@ -390,6 +532,32 @@ namespace levyke
             {
                 await new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}").ShowAsync();
             }
+        }
+
+        public class SimpleArduinoService
+        {
+            private SerialDevice _serial;
+
+            public async Task SendToArduino(string text)
+            {
+                var devices = await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
+                if (devices.Count == 0) return;
+
+                _serial = await SerialDevice.FromIdAsync(devices[0].Id);
+                _serial.BaudRate = 115200;
+
+                var writer = new DataWriter(_serial.OutputStream);
+                writer.WriteString(text + "\n");
+                await writer.StoreAsync();
+            }
+        }
+
+        private async void OnTrackChanged(string title, string artist)
+        {
+            var arduino = new SimpleArduinoService();
+            await arduino.SendToArduino($"T:{title}");
+            await Task.Delay(100);
+            await arduino.SendToArduino($"A:{artist}");
         }
     }
 }

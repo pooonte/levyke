@@ -1,44 +1,47 @@
-﻿using Windows.Storage;
-using System;
+﻿using System;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace levyke.Models
 {
+    [DataContract]
     public class TrackItem
     {
+        [IgnoreDataMember]
         public StorageFile File { get; set; }
-        public string Title { get; set; } = "Неизвестный трек";
-        public string Artist { get; set; } = "Неизвестный исполнитель";
-        public string Album { get; set; } = "Неизвестный альбом";
-        public string Number { get; set; } = "";
 
-        public static async System.Threading.Tasks.Task<TrackItem> FromFile(StorageFile file)
+        [DataMember]
+        public string FilePath { get; set; } // Добавляем FilePath
+
+        [DataMember]
+        public string Title { get; set; }
+
+        [DataMember]
+        public string Artist { get; set; }
+
+        [DataMember]
+        public string Album { get; set; }
+
+        [IgnoreDataMember]
+        public TimeSpan Duration { get; set; }
+
+        public static async Task<TrackItem> FromFile(StorageFile file)
         {
-            var item = new TrackItem { File = file };
-
-            try
+            var track = new TrackItem
             {
-                var props = await file.Properties.GetMusicPropertiesAsync().AsTask();
+                File = file,
+                FilePath = file.Path // Сохраняем путь
+            };
 
-                item.Title = string.IsNullOrEmpty(props.Title)
-                    ? file.DisplayName
-                    : props.Title;
+            var props = await file.Properties.GetMusicPropertiesAsync();
+            track.Title = string.IsNullOrEmpty(props.Title) ? file.DisplayName : props.Title;
+            track.Artist = string.IsNullOrEmpty(props.Artist) ? "Неизвестный исполнитель" : props.Artist;
+            track.Album = string.IsNullOrEmpty(props.Album) ? "Неизвестный альбом" : props.Album;
+            track.Duration = props.Duration;
 
-                item.Artist = string.IsNullOrEmpty(props.Artist)
-                    ? "Неизвестный исполнитель"
-                    : props.Artist;
-
-                item.Album = string.IsNullOrEmpty(props.Album)
-                    ? "Неизвестный альбом"
-                    : props.Album;
-            }
-            catch
-            {
-                item.Title = file.DisplayName;
-                item.Artist = "Неизвестный исполнитель";
-                item.Album = "Неизвестный альбом";
-            }
-
-            return item;
+            return track;
         }
     }
 }
