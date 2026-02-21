@@ -1,4 +1,5 @@
-﻿using levyke.Services;
+﻿using levyke.Models; // Добавляем для ThemeManager
+using levyke.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,45 +27,53 @@ namespace levyke
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
+
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
             if (rootFrame == null)
             {
-
                 rootFrame = new Frame();
-
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
-
+                    // TODO: Загрузить состояние из ранее приостановленного приложения
                 }
 
                 Window.Current.Content = rootFrame;
             }
+
             // >>> ЗАГРУЖАЕМ ТЕМУ <<<
-            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
-            if (savedIndex != null)
+            try
             {
-                var themes = ThemeProvider.GetThemes();
-                int index = (int)savedIndex;
-                if (index >= 0 && index < themes.Count)
+                var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
+                if (savedIndex != null)
                 {
-                    ThemeService.Apply(themes[index]);
+                    var themes = ThemeManager.GetThemes(); // Вместо ThemeProvider
+                    int index = (int)savedIndex;
+                    if (index >= 0 && index < themes.Count)
+                    {
+                        ThemeManager.Apply(themes[index]); // Вместо ThemeService
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки темы: {ex.Message}");
+            }
             // <<< КОНЕЦ >>>
+
             if (e.PrelaunchActivated == false)
             {
                 if (rootFrame.Content == null)
                 {
-
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                 }
 
                 Window.Current.Activate();
+
                 var view = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView();
                 view.SetPreferredMinSize(new Windows.Foundation.Size(400, 370));
             }
@@ -78,7 +87,7 @@ namespace levyke
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-
+            // TODO: Сохранить состояние приложения
             deferral.Complete();
         }
     }

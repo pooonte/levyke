@@ -456,7 +456,7 @@ namespace levyke
 
         private void LoadThemes()
         {
-            _themes = ThemeProvider.GetThemes();
+            _themes = ThemeManager.GetThemes(); // Вместо ThemeProvider.GetThemes()
             ThemeSelector.ItemsSource = _themes;
             ThemeSelector.DisplayMemberPath = "Name";
 
@@ -464,6 +464,12 @@ namespace levyke
             if (savedIndex != null)
             {
                 ThemeSelector.SelectedIndex = (int)savedIndex;
+
+                // Применяем сохранённую тему сразу при загрузке
+                if (ThemeSelector.SelectedItem is ColorPalette selected)
+                {
+                    ThemeManager.Apply(selected);
+                }
             }
         }
 
@@ -471,9 +477,10 @@ namespace levyke
         {
             if (ThemeSelector.SelectedItem is ColorPalette selected)
             {
-                ThemeService.Apply(selected);
+                ThemeManager.Apply(selected); // Вместо ThemeService.Apply()
                 ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"] = ThemeSelector.SelectedIndex;
 
+                // Обновляем цвета элементов интерфейса
                 this.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
                 MiniPlayerPanel.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
                 MiniPlayButton.Background = (Brush)Application.Current.Resources["PlaybackControlBrush"];

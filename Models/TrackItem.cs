@@ -13,7 +13,7 @@ namespace levyke.Models
         public StorageFile File { get; set; }
 
         [DataMember]
-        public string FilePath { get; set; } // Добавляем FilePath
+        public string FilePath { get; set; }
 
         [DataMember]
         public string Title { get; set; }
@@ -27,12 +27,26 @@ namespace levyke.Models
         [IgnoreDataMember]
         public TimeSpan Duration { get; set; }
 
+        // ДЛЯ АЛФАВИТНОЙ НАВИГАЦИИ - ПЕРВАЯ БУКВА
+        public string FirstLetter
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Title)) return "#";
+                char first = char.ToUpper(Title[0]);
+                return char.IsLetter(first) ? first.ToString() : "#";
+            }
+        }
+
+        // ДЛЯ АЛФАВИТНОЙ НАВИГАЦИИ - ПОКАЗЫВАТЬ БУКВУ-РАЗДЕЛИТЕЛЬ
+        public bool ShowLetter { get; set; } // ЭТО СВОЙСТВО НУЖНО ДОБАВИТЬ
+
         public static async Task<TrackItem> FromFile(StorageFile file)
         {
             var track = new TrackItem
             {
                 File = file,
-                FilePath = file.Path // Сохраняем путь
+                FilePath = file.Path
             };
 
             var props = await file.Properties.GetMusicPropertiesAsync();
