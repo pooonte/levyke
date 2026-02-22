@@ -111,6 +111,98 @@
                     </ListView>
                 </PivotItem>
 
+                <!-- 🔍 НОВАЯ ВКЛАДКА ПОИСКА -->
+                <!-- 🔍 ВКЛАДКА ПОИСКА (ИСПРАВЛЕННАЯ) -->
+                <PivotItem Header="Поиск" FontSize="22">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Поле поиска -->
+                        <TextBox x:Name="SearchBox"
+                 Grid.Row="0"
+                 Height="48"
+                 Margin="16,16,16,8"
+                 PlaceholderText="Введите название трека, исполнителя или альбома..."
+                 TextChanged="SearchBox_TextChanged"
+                 Background="{StaticResource MiniPlayerBackgroundBrush}"
+                 Foreground="White"
+                 BorderBrush="{StaticResource PlaybackControlBrush}"
+                 BorderThickness="2"
+                 FontSize="16"
+                 Padding="12,0,12,0"/>
+
+                        <!-- Контейнер для списка и пустого состояния -->
+                        <Grid Grid.Row="1">
+                            <!-- Список результатов (виден когда есть результаты) -->
+                            <ListView x:Name="SearchResultsList"
+                      ItemClick="SearchResult_ItemClick"
+                      IsItemClickEnabled="True"
+                      Background="Transparent"
+                      Margin="0,8,0,0"
+                      Visibility="Collapsed">
+
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Height="50" Margin="0,4,16,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="16,0,0,0">
+                                                <TextBlock Text="{Binding Title}" 
+                                           Foreground="White" 
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Artist}" 
+                                               Foreground="{StaticResource PlaybackControlBrush}"
+                                               FontSize="13"/>
+                                                    <TextBlock Text=" — " 
+                                               Foreground="Gray"
+                                               FontSize="13"
+                                               Margin="3,0,3,0"/>
+                                                    <TextBlock Text="{Binding Album}" 
+                                               Foreground="{StaticResource PlaybackControlBrush}"
+                                               FontSize="13"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="150"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding DurationString}" 
+                                       Foreground="White"
+                                       FontSize="13"
+                                       Margin="0,0,16,0"
+                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                            <!-- Пустое состояние (видно когда нет результатов) -->
+                            <StackPanel x:Name="EmptyStatePanel"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Visibility="Visible">
+                                <TextBlock Text="🔍" 
+                           FontSize="48" 
+                           Foreground="#666666"
+                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Начните вводить текст для поиска" 
+                           Foreground="#666666"
+                           FontSize="16"
+                           Margin="0,20,0,0"
+                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </PivotItem>
+
                 <PivotItem Header="Настройки">
                     <StackPanel>
                         <TextBlock Text="Выберите тему:"

@@ -626,5 +626,85 @@ namespace levyke
                 ShowLoadingIndicator(false);
             }
         }
+        // ==================== ПОИСК ====================
+
+        /// <summary>
+        /// Результаты поиска
+        /// </summary>
+        private ObservableCollection<TrackItem> _searchResults = new ObservableCollection<TrackItem>();
+
+        /// <summary>
+        /// Обработчик изменения текста поиска
+        /// </summary>
+        /// <summary>
+        /// Обработчик изменения текста поиска
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string searchText = SearchBox.Text.ToLower().Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // Нет текста - показываем пустое состояние, скрываем список
+                SearchResultsList.Visibility = Visibility.Collapsed;
+                EmptyStatePanel.Visibility = Visibility.Visible;
+                return;
+            }
+
+            // Поиск по трекам
+            var results = _tracks.Where(t =>
+                (t.Title?.ToLower().Contains(searchText) ?? false) ||
+                (t.Artist?.ToLower().Contains(searchText) ?? false) ||
+                (t.Album?.ToLower().Contains(searchText) ?? false)
+            ).ToList();
+
+            if (results.Any())
+            {
+                // Есть результаты - показываем список, скрываем пустое состояние
+                SearchResultsList.ItemsSource = results;
+                SearchResultsList.Visibility = Visibility.Visible;
+                EmptyStatePanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Нет результатов - показываем пустое состояние, скрываем список
+                SearchResultsList.Visibility = Visibility.Collapsed;
+                EmptyStatePanel.Visibility = Visibility.Visible;
+
+                // Можем изменить текст для "ничего не найдено"
+                var emptyText = (EmptyStatePanel.Children[1] as TextBlock);
+                if (emptyText != null)
+                {
+                    emptyText.Text = "Ничего не найдено";
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"Поиск: найдено {results.Count} результатов");
+        }
+
+        /// <summary>
+        /// Обработчик клика по результату поиска
+        /// </summary>
+        private async void SearchResult_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is TrackItem track)
+            {
+                try
+                {
+                    var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
+                    PlayTrack(file);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Ошибка при воспроизведении: {ex.Message}");
+
+                    // Удаляем из коллекции если файл не найден
+                    _tracks.Remove(track);
+
+                    // Обновляем результаты поиска
+                    SearchBox_TextChanged(null, null);
+                }
+            }
+        }
     }
 }
