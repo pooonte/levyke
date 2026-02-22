@@ -489,6 +489,10 @@ namespace levyke
                 FullPlayerOverlay.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
                 ProgressSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
                 VolumeSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
+                SearchBoxText.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
+                SearchBox.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
+                SearchBox.BorderBrush = (Brush)Application.Current.Resources["PlaybackControlBrush"];
+                RefreshLibraryButton.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
             }
         }
 
