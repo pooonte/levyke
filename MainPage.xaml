@@ -174,7 +174,7 @@
                                         Visibility="Visible">
                                 <Image x:Name="SearchImage1"
                                        Source="ms-appx:///Assets/intelligence.png"
-                                       Width="194" Height="113"
+                                       Width="120" Height="68"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Visibility="Visible">
