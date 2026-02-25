@@ -150,6 +150,7 @@
   <ItemGroup>
     <Content Include="Assets\intelligence.png" />
     <Content Include="Assets\DefaultAlbum.png" />
+    <Content Include="Assets\next.png" />
     <Content Include="Assets\pause.png" />
     <Content Include="Assets\play.png" />
     <Content Include="Assets\prev.png" />

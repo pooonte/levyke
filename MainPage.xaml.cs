@@ -49,6 +49,7 @@ namespace levyke
             this.InitializeComponent();
             MediaPlayerSingleton.Player.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
 
+            MediaPlayerSingleton.Player.MediaEnded += Player_MediaEnded;
             // Запускаем инициализацию библиотеки
             _ = InitializeLibraryAsync();
 
@@ -224,47 +225,7 @@ namespace levyke
         }
 
         // === PlayTrack (с восстановлением StorageFile) ===
-        private async void PlayTrack(StorageFile file)
-        {
-            if (file == null) return;
 
-            var track = _tracks.FirstOrDefault(t => t.FilePath == file.Path);
-            if (track == null) return;
-
-            _currentTrackIndex = _tracks.IndexOf(track);
-            track.File = file; // Сохраняем StorageFile
-
-            MediaPlayerSingleton.PlayFile(file);
-
-            var saved = ApplicationData.Current.LocalSettings.Values["SavedVolume"];
-            MediaPlayerSingleton.Player.Volume = saved is double v ? v : 1.0;
-
-            MiniTrackTitle.Text = track.Title;
-            MiniTrackArtist.Text = track.Artist;
-
-            FullTrackTitle.Text = track.Title;
-            FullTrackArtist.Text = track.Artist;
-
-            try
-            {
-                var thumb = await file.GetThumbnailAsync(
-                    Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
-                if (thumb != null && thumb.Size > 0)
-                {
-                    var bitmap = new BitmapImage();
-                    await bitmap.SetSourceAsync(thumb);
-                    MiniAlbumArt.Source = bitmap;
-                    FullAlbumArt.Source = bitmap;
-                }
-            }
-            catch { }
-
-            MiniPlayerPanel.Visibility = Visibility.Visible;
-            UpdatePlayButtonState();
-
-            if (_positionTimer == null)
-                StartPositionTimer();
-        }
 
         // === Track_ItemClick с восстановлением файла ===
         private async void Track_ItemClick(object sender, ItemClickEventArgs e)
@@ -440,8 +401,13 @@ namespace levyke
                 var session = MediaPlayerSingleton.Player.PlaybackSession;
                 if (session?.NaturalDuration > TimeSpan.Zero)
                 {
+                    // Устанавливаем максимум слайдера
                     ProgressSlider.Maximum = session.NaturalDuration.TotalSeconds;
+
+                    // Обновляем общее время
                     TotalTimeText.Text = FormatTime(session.NaturalDuration);
+
+                    // Обновляем текущую позицию (если пользователь не перетаскивает)
                     if (!_userIsSeeking)
                     {
                         ProgressSlider.Value = session.Position.TotalSeconds;
@@ -708,6 +674,88 @@ namespace levyke
                     // Обновляем результаты поиска
                     SearchBox_TextChanged(null, null);
                 }
+            }
+        }
+        private void Player_MediaEnded(Windows.Media.Playback.MediaPlayer sender, object args)
+        {
+            // Выполняем в UI потоке
+            _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                PlayNextTrack();
+            });
+        }
+        private async void PlayTrack(StorageFile file)
+        {
+            if (file == null) return;
+
+            var track = _tracks.FirstOrDefault(t => t.FilePath == file.Path);
+            if (track == null) return;
+
+            _currentTrackIndex = _tracks.IndexOf(track);
+            track.File = file;
+
+            MediaPlayerSingleton.PlayFile(file);
+
+            // ===== ДОБАВЬ ЭТОТ БЛОК =====
+            // Сбрасываем слайдер в начало
+            ProgressSlider.Value = 0;
+            CurrentTimeText.Text = "0:00";
+
+            // Сбрасываем флаг перетаскивания
+            _userIsSeeking = false;
+            // ===== КОНЕЦ БЛОКА =====
+
+            var saved = ApplicationData.Current.LocalSettings.Values["SavedVolume"];
+            MediaPlayerSingleton.Player.Volume = saved is double v ? v : 1.0;
+
+            MiniTrackTitle.Text = track.Title;
+            MiniTrackArtist.Text = track.Artist;
+
+            FullTrackTitle.Text = track.Title;
+            FullTrackArtist.Text = track.Artist;
+
+            try
+            {
+                var thumb = await file.GetThumbnailAsync(
+                    Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
+                if (thumb != null && thumb.Size > 0)
+                {
+                    var bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(thumb);
+                    MiniAlbumArt.Source = bitmap;
+                    FullAlbumArt.Source = bitmap;
+                }
+            }
+            catch { }
+
+            MiniPlayerPanel.Visibility = Visibility.Visible;
+            UpdatePlayButtonState();
+
+            if (_positionTimer == null)
+                StartPositionTimer();
+        }
+        private void PlayNextTrack()
+        {
+            if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
+
+            int nextIndex = _currentTrackIndex + 1;
+            if (nextIndex >= _tracks.Count)
+            {
+                nextIndex = 0;
+            }
+
+            var nextTrack = _tracks[nextIndex];
+
+            try
+            {
+                var file = StorageFile.GetFileFromPathAsync(nextTrack.FilePath).AsTask().Result;
+                PlayTrack(file); // PlayTrack сам сбросит слайдер
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка: {ex.Message}");
+                _currentTrackIndex = nextIndex;
+                PlayNextTrack();
             }
         }
     }
