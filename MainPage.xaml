@@ -309,7 +309,9 @@
                         Width="250"
                         Height="30"
                         Foreground="{StaticResource AppTitleBrush}"
-                        ValueChanged="ProgressSlider_ValueChanged"/>
+                        ManipulationMode="TranslateX"
+                        ManipulationStarted="ProgressSlider_ManipulationStarted"
+                        ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
                 <TextBlock x:Name="TotalTimeText" 
                            Text="0:00" 
                            Foreground="White" 

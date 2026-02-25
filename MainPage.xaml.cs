@@ -31,6 +31,7 @@ namespace levyke
         private DispatcherTimer _positionTimer;
         private int _currentTrackIndex = -1;
         private bool _userIsSeeking = false;
+        private bool _wasPlayingBeforeSeek = false;
 
         // Темы
         private List<ColorPalette> _themes;
@@ -381,15 +382,6 @@ namespace levyke
             catch { }
         }
 
-        private void ProgressSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            if (_userIsSeeking) return;
-            var session = MediaPlayerSingleton.Player.PlaybackSession;
-            if (session != null && session.NaturalDuration > TimeSpan.Zero)
-            {
-                session.Position = TimeSpan.FromSeconds(e.NewValue);
-            }
-        }
 
         private void StartPositionTimer()
         {
@@ -401,13 +393,10 @@ namespace levyke
                 var session = MediaPlayerSingleton.Player.PlaybackSession;
                 if (session?.NaturalDuration > TimeSpan.Zero)
                 {
-                    // Устанавливаем максимум слайдера
                     ProgressSlider.Maximum = session.NaturalDuration.TotalSeconds;
-
-                    // Обновляем общее время
                     TotalTimeText.Text = FormatTime(session.NaturalDuration);
 
-                    // Обновляем текущую позицию (если пользователь не перетаскивает)
+                    // Обновляем слайдер ТОЛЬКО если пользователь не перетаскивает
                     if (!_userIsSeeking)
                     {
                         ProgressSlider.Value = session.Position.TotalSeconds;
@@ -756,6 +745,82 @@ namespace levyke
                 System.Diagnostics.Debug.WriteLine($"❌ Ошибка: {ex.Message}");
                 _currentTrackIndex = nextIndex;
                 PlayNextTrack();
+            }
+        }
+        private void ProgressSlider_ManipulationStarted(object sender, Windows.UI.Xaml.Input.ManipulationStartedRoutedEventArgs e)
+        {
+            _userIsSeeking = true;
+            _wasPlayingBeforeSeek = MediaPlayerSingleton.IsPlaying;
+
+            if (_wasPlayingBeforeSeek)
+            {
+                MediaPlayerSingleton.Player.Pause();
+                UpdatePlayButtonState();
+            }
+        }
+
+        private async void ProgressSlider_ManipulationCompleted(object sender, Windows.UI.Xaml.Input.ManipulationCompletedRoutedEventArgs e)
+        {
+            _userIsSeeking = false;
+
+            var session = MediaPlayerSingleton.Player.PlaybackSession;
+            if (session == null) return;
+
+            double remainingTime = session.NaturalDuration.TotalSeconds - ProgressSlider.Value;
+
+            if (remainingTime < 2 && ProgressSlider.Value > 0)
+            {
+                await PlayNextTrackAsync();
+            }
+            else
+            {
+                session.Position = TimeSpan.FromSeconds(ProgressSlider.Value);
+
+                if (_wasPlayingBeforeSeek)
+                {
+                    MediaPlayerSingleton.Player.Play();
+                    UpdatePlayButtonState();
+                }
+            }
+        }
+        private async Task PlayNextTrackAsync()
+        {
+            if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
+
+            _currentTrackIndex = Math.Min(_tracks.Count - 1, _currentTrackIndex + 1);
+            var nextTrack = _tracks[_currentTrackIndex];
+
+            try
+            {
+                var file = await StorageFile.GetFileFromPathAsync(nextTrack.FilePath);
+                nextTrack.File = file;
+                MediaPlayerSingleton.PlayFile(file);
+
+                // Обновляем UI
+                MiniTrackTitle.Text = nextTrack.Title;
+                MiniTrackArtist.Text = nextTrack.Artist;
+                FullTrackTitle.Text = nextTrack.Title;
+                FullTrackArtist.Text = nextTrack.Artist;
+
+                // Обложка
+                try
+                {
+                    var thumb = await file.GetThumbnailAsync(
+                        Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
+                    if (thumb != null && thumb.Size > 0)
+                    {
+                        var bitmap = new BitmapImage();
+                        await bitmap.SetSourceAsync(thumb);
+                        MiniAlbumArt.Source = bitmap;
+                        FullAlbumArt.Source = bitmap;
+                    }
+                }
+                catch { }
+            }
+            catch
+            {
+                // Файл не найден — пробуем следующий
+                await PlayNextTrackAsync();
             }
         }
     }
