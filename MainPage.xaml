@@ -111,8 +111,6 @@
                     </ListView>
                 </PivotItem>
 
-                <!-- 🔍 НОВАЯ ВКЛАДКА ПОИСКА -->
-                <!-- 🔍 ВКЛАДКА ПОИСКА (ИСПРАВЛЕННАЯ) -->
                 <PivotItem Header="Поиск" FontSize="22" Margin="0">
                     <Grid>
                         <Grid.RowDefinitions>
