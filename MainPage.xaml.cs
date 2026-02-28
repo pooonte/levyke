@@ -256,7 +256,8 @@ namespace levyke
         {
             if (e.ClickedItem is ArtistItem artist)
             {
-                PlayTrack(artist.FirstTrack.File);
+                var artistTracks = _tracks.Where(t => t.Artist == artist.Name).ToList();
+                ShowFullScreenTracks($"Исполнитель: {artist.Name}", artistTracks);
             }
         }
 
@@ -264,7 +265,8 @@ namespace levyke
         {
             if (e.ClickedItem is AlbumItem album)
             {
-                PlayTrack(album.FirstTrack.File);
+                var albumTracks = _tracks.Where(t => t.Album == album.Name).ToList();
+                ShowFullScreenTracks($"Альбом: {album.Name}", albumTracks);
             }
         }
 
@@ -683,39 +685,27 @@ namespace levyke
             _currentTrackIndex = _tracks.IndexOf(track);
             track.File = file;
 
-            MediaPlayerSingleton.PlayFile(file);
-
-            // ===== ДОБАВЬ ЭТОТ БЛОК =====
-            // Сбрасываем слайдер в начало
+            // Сбрасываем слайдер
             ProgressSlider.Value = 0;
             CurrentTimeText.Text = "0:00";
-
-            // Сбрасываем флаг перетаскивания
             _userIsSeeking = false;
-            // ===== КОНЕЦ БЛОКА =====
+
+            MediaPlayerSingleton.PlayFile(file);
 
             var saved = ApplicationData.Current.LocalSettings.Values["SavedVolume"];
             MediaPlayerSingleton.Player.Volume = saved is double v ? v : 1.0;
 
+            // Обновляем UI
             MiniTrackTitle.Text = track.Title;
             MiniTrackArtist.Text = track.Artist;
-
             FullTrackTitle.Text = track.Title;
             FullTrackArtist.Text = track.Artist;
 
-            try
-            {
-                var thumb = await file.GetThumbnailAsync(
-                    Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
-                if (thumb != null && thumb.Size > 0)
-                {
-                    var bitmap = new BitmapImage();
-                    await bitmap.SetSourceAsync(thumb);
-                    MiniAlbumArt.Source = bitmap;
-                    FullAlbumArt.Source = bitmap;
-                }
-            }
-            catch { }
+            // Загружаем обложку
+            await LoadAlbumArtForTrack(track);
+
+            // Обновляем мини-плеер в полноэкранной панели
+            UpdateFullScreenMiniPlayer();
 
             MiniPlayerPanel.Visibility = Visibility.Visible;
             UpdatePlayButtonState();
@@ -723,22 +713,25 @@ namespace levyke
             if (_positionTimer == null)
                 StartPositionTimer();
         }
-        private void PlayNextTrack()
+        private async void PlayNextTrack()
         {
             if (_tracks.Count == 0 || _currentTrackIndex < 0) return;
 
             int nextIndex = _currentTrackIndex + 1;
             if (nextIndex >= _tracks.Count)
-            {
                 nextIndex = 0;
-            }
 
             var nextTrack = _tracks[nextIndex];
 
             try
             {
-                var file = StorageFile.GetFileFromPathAsync(nextTrack.FilePath).AsTask().Result;
-                PlayTrack(file); // PlayTrack сам сбросит слайдер
+                var file = await StorageFile.GetFileFromPathAsync(nextTrack.FilePath);
+                nextTrack.File = file;
+
+                // Загружаем обложку перед воспроизведением
+                await LoadAlbumArtForTrack(nextTrack);
+
+                PlayTrack(file);
             }
             catch (Exception ex)
             {
@@ -821,6 +814,183 @@ namespace levyke
             {
                 // Файл не найден — пробуем следующий
                 await PlayNextTrackAsync();
+            }
+        }
+        private async void ShowTracksDialog(string title, List<TrackItem> tracks)
+        {
+            // Сортируем треки и добавляем номера
+            int trackNumber = 1;
+            foreach (var track in tracks.OrderBy(t => t.Title))
+            {
+                track.TrackNumber = trackNumber++;
+            }
+
+            // Сначала создаём диалог (пустой)
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                CloseButtonText = "Закрыть",
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 40, 40, 40)),
+                Foreground = new SolidColorBrush(Windows.UI.Colors.White),
+                FullSizeDesired = false,
+                Width = 450,
+                Height = 500
+            };
+
+            // Потом создаём список
+            var listView = new ListView
+            {
+                ItemsSource = tracks,
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 30)),
+                ItemTemplate = (DataTemplate)Resources["TrackDialogTemplate"],
+                Margin = new Thickness(0, 0, 0, 0),
+                BorderThickness = new Thickness(0)
+            };
+
+            listView.ItemClick += async (s, args) =>
+            {
+                if (args.ClickedItem is TrackItem track)
+                {
+                    dialog.Hide();
+                    try
+                    {
+                        var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
+                        PlayTrack(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Ошибка: {ex.Message}");
+                    }
+                }
+            };
+            listView.IsItemClickEnabled = true;
+
+            // Добавляем список в диалог
+            dialog.Content = listView;
+
+            // Показываем диалог
+            await dialog.ShowAsync();
+        }
+
+        private void ShowFullScreenTracks(string title, List<TrackItem> tracks)
+        {
+            // Сортируем треки и добавляем номера
+            int trackNumber = 1;
+            foreach (var track in tracks.OrderBy(t => t.Title))
+            {
+                track.TrackNumber = trackNumber++;
+            }
+
+            // Устанавливаем заголовок
+            TracksPanelTitle.Text = title;
+
+            // Показываем список
+            FullScreenTracksList.ItemsSource = tracks;
+
+            // Показываем панель, скрываем основное содержимое
+            MainContent.Visibility = Visibility.Collapsed;
+            FullScreenTracksPanel.Visibility = Visibility.Visible;
+
+            // Обновляем мини-плеер в панели
+            UpdateFullScreenMiniPlayer();
+        }
+
+        private void CloseTracksPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Возвращаемся к основному содержимому
+            FullScreenTracksPanel.Visibility = Visibility.Collapsed;
+            MainContent.Visibility = Visibility.Visible;
+        }
+
+        private void UpdateFullScreenMiniPlayer()
+        {
+            if (_currentTrackIndex >= 0 && _currentTrackIndex < _tracks.Count)
+            {
+                var track = _tracks[_currentTrackIndex];
+                FullScreenMiniTitle.Text = track.Title;
+                FullScreenMiniArtist.Text = track.Artist;
+                FullScreenMiniAlbumArt.Source = MiniAlbumArt.Source;
+
+                string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
+                FullScreenPlayIcon.Source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
+            }
+        }
+
+        private async void FullScreenTrack_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is TrackItem track)
+            {
+                try
+                {
+                    var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
+                    PlayTrack(file);
+                    UpdateFullScreenMiniPlayer();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Ошибка: {ex.Message}");
+                }
+            }
+        }
+        /// <summary>
+        /// Обновление обложки для текущего трека
+        /// </summary>
+        private async void UpdateAlbumArtForCurrentTrack()
+        {
+            if (_currentTrackIndex < 0 || _currentTrackIndex >= _tracks.Count) return;
+
+            var track = _tracks[_currentTrackIndex];
+            if (track?.File == null) return;
+
+            try
+            {
+                var thumb = await track.File.GetThumbnailAsync(
+                    Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
+
+                if (thumb != null && thumb.Size > 0)
+                {
+                    var bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(thumb);
+
+                    // Обновляем обложки везде
+                    MiniAlbumArt.Source = bitmap;
+                    FullAlbumArt.Source = bitmap;
+                    FullScreenMiniAlbumArt.Source = bitmap;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки обложки: {ex.Message}");
+            }
+        }
+        /// <summary>
+        /// Загрузка обложки для трека
+        /// </summary>
+        private async Task LoadAlbumArtForTrack(TrackItem track)
+        {
+            try
+            {
+                if (track?.File != null)
+                {
+                    var thumb = await track.File.GetThumbnailAsync(
+                        Windows.Storage.FileProperties.ThumbnailMode.MusicView, 256);
+
+                    if (thumb != null && thumb.Size > 0)
+                    {
+                        var bitmap = new BitmapImage();
+                        await bitmap.SetSourceAsync(thumb);
+
+                        MiniAlbumArt.Source = bitmap;
+                        FullAlbumArt.Source = bitmap;
+                        FullScreenMiniAlbumArt.Source = bitmap;
+
+                        System.Diagnostics.Debug.WriteLine($"✅ Обложка загружена для: {track.Title}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки обложки: {ex.Message}");
             }
         }
     }

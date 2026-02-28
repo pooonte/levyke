@@ -27,6 +27,7 @@ namespace levyke.Models
         [IgnoreDataMember]
         public TimeSpan Duration { get; set; }
 
+        public int TrackNumber { get; set; }
         public string DurationString => $"{(int)Duration.TotalMinutes}:{Duration.Seconds:D2}";
         // ДЛЯ АЛФАВИТНОЙ НАВИГАЦИИ - ПЕРВАЯ БУКВА
         public string FirstLetter
