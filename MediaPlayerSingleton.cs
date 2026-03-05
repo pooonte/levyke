@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Media.Playback;
+﻿using Windows.Media.Playback;
 using Windows.Storage;
 
 namespace Singleton
