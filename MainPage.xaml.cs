@@ -863,5 +863,9 @@ namespace levyke
             _currentPlaylist = _tracks.ToList();
             _isArtistViewActive = false;
         }
+        private void OpenOnlinePage_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(Views.OnlinePage));
+        }
     }
 }

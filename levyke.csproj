@@ -129,6 +129,9 @@
     <Compile Include="Models\MusicTagHelper.cs" />
     <Compile Include="Models\ThemeManager.cs" />
     <Compile Include="Models\TrackItem.cs" />
+    <Compile Include="OnlinePage.xaml.cs">
+      <DependentUpon>OnlinePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\LibraryService.cs" />
     <Compile Include="Services\MusicCacheService.cs" />
@@ -140,6 +143,7 @@
     </AppxManifest>
     <None Include="levyke_key.pfx" />
     <None Include="levyke_TemporaryKey.pfx" />
+    <None Include="MusicStream\music_server.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitattributes" />
@@ -169,10 +173,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="OnlinePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.8</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>10.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

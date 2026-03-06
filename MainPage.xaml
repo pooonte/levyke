@@ -295,6 +295,23 @@
                     </Grid>
                 </PivotItem>
 
+                <PivotItem Header="Онлайн" FontSize="22">
+                    <Grid>
+                        <StackPanel VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" >
+                            <TextBlock Text="Нужны онлайн функции?" 
+                       Foreground="White" 
+                       FontSize="22"/>
+                            <Button Content="Да" 
+                    Click="OpenOnlinePage_Click" 
+                    Height="45" 
+                    Width="260"
+                    Background="{StaticResource PlaybackControlBrush}" 
+                    Foreground="White"/>
+                        </StackPanel>
+                    </Grid>
+                </PivotItem>
+                
                 <PivotItem Header="Поиск" FontSize="22" Margin="0">
                     <Grid>
                         <Grid.RowDefinitions>
