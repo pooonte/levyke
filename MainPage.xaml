@@ -170,37 +170,129 @@
                     </Grid>
                 </PivotItem>
 
+                <!-- АЛЬБОМЫ -->
                 <PivotItem Header="Альбомы" FontSize="22">
-                    <ListView x:Name="AlbumsList" 
-                              ItemClick="Album_ItemClick" 
-                              IsItemClickEnabled="True" 
-                              Background="Transparent">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="16,8">
-                                    <TextBlock Text="{Binding Name}" 
-                                               Foreground="White" 
-                                               FontSize="16"
-                                               TextTrimming="CharacterEllipsis"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                        <TextBlock Text="{Binding Artist}" 
-                                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                                   FontSize="12"/>
-                                        <TextBlock Text=" — " 
-                                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                                   FontSize="12"/>
-                                        <TextBlock Text="{Binding TrackCount}" 
-                                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                                   FontSize="12"/>
-                                        <TextBlock Text=" треков" 
-                                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                                   FontSize="12"
-                                                   Margin="2,0,0,0"/>
+                    <Grid>
+                        <!-- СПИСОК АЛЬБОМОВ (виден по умолчанию) -->
+                        <ListView x:Name="AlbumsList" 
+                  ItemClick="Album_ItemClick" 
+                  IsItemClickEnabled="True" 
+                  Background="Transparent"
+                  Visibility="Visible">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="16,8">
+                                        <TextBlock Text="{Binding Name}" 
+                                   Foreground="White" 
+                                   FontSize="16"
+                                   TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding Artist}" 
+                                       Foreground="{StaticResource PlaybackControlBrush}"
+                                       FontSize="12"/>
+                                            <TextBlock Text=" — " 
+                                       Foreground="{StaticResource PlaybackControlBrush}"
+                                       FontSize="12"/>
+                                            <TextBlock Text="{Binding TrackCount}" 
+                                       Foreground="{StaticResource PlaybackControlBrush}"
+                                       FontSize="12"/>
+                                            <TextBlock Text=" треков" 
+                                       Foreground="{StaticResource PlaybackControlBrush}"
+                                       FontSize="12"
+                                       Margin="2,0,0,0"/>
+                                        </StackPanel>
                                     </StackPanel>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- СПИСОК ПЕСЕН АЛЬБОМА (скрыт по умолчанию) -->
+                        <Grid x:Name="AlbumSongsPanel" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Шапка с кнопкой назад и названием альбома -->
+                            <Grid Grid.Row="0" 
+                  Background="{StaticResource MiniPlayerBackgroundBrush}"
+                  Height="60"
+                  Padding="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="BackToAlbumsButton"
+                        Grid.Column="0"
+                        Width="40"
+                        Height="40"
+                        Background="Transparent"
+                        Click="BackToAlbumsButton_Click">
+                                    <TextBlock Text="←" 
+                               FontSize="24" 
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                                </Button>
+
+                                <TextBlock Grid.Column="1"
+                           x:Name="SelectedAlbumName"
+                           Text="Альбом"
+                           Foreground="White"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"/>
+                            </Grid>
+
+                            <!-- Список песен альбома -->
+                            <ListView x:Name="AlbumSongsList"
+                      Grid.Row="1"
+                      ItemClick="AlbumSong_ItemClick"
+                      IsItemClickEnabled="True"
+                      Background="Transparent"
+                      Margin="0,8,0,0">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Height="50" Margin="16,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="40"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" 
+                                       Text="{Binding TrackNumber}" 
+                                       Foreground="Gray"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+
+                                            <StackPanel Grid.Column="1" 
+                                        VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" 
+                                           Foreground="White" 
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Artist}" 
+                                           Foreground="Gray" 
+                                           FontSize="12"
+                                           Margin="0,2,0,0"/>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" 
+                                       Text="{Binding DurationString}" 
+                                       Foreground="Gray"
+                                       FontSize="12"
+                                       Margin="0,0,16,0"
+                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </Grid>
                 </PivotItem>
 
                 <PivotItem Header="Поиск" FontSize="22" Margin="0">
