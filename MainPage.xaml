@@ -47,10 +47,8 @@
                     </ListView>
                 </PivotItem>
 
-                <!-- ИСПОЛНИТЕЛИ -->
                 <PivotItem Header="Исполнители" FontSize="22">
                     <Grid>
-                        <!-- СПИСОК ИСПОЛНИТЕЛЕЙ (виден по умолчанию) -->
                         <ListView x:Name="ArtistsList" 
                   ItemClick="Artist_ItemClick" 
                   IsItemClickEnabled="True" 
@@ -81,14 +79,12 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-                        <!-- СПИСОК ПЕСЕН ИСПОЛНИТЕЛЯ (скрыт по умолчанию) -->
                         <Grid x:Name="ArtistSongsPanel" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Шапка с кнопкой назад и названием исполнителя -->
                             <Grid Grid.Row="0" 
                   Background="{StaticResource MiniPlayerBackgroundBrush}"
                   Height="60"
@@ -121,7 +117,6 @@
                            Margin="10,0,0,0"/>
                             </Grid>
 
-                            <!-- Список песен исполнителя -->
                             <ListView x:Name="ArtistSongsList"
                       Grid.Row="1"
                       ItemClick="ArtistSong_ItemClick"
@@ -170,10 +165,8 @@
                     </Grid>
                 </PivotItem>
 
-                <!-- АЛЬБОМЫ -->
                 <PivotItem Header="Альбомы" FontSize="22">
                     <Grid>
-                        <!-- СПИСОК АЛЬБОМОВ (виден по умолчанию) -->
                         <ListView x:Name="AlbumsList" 
                   ItemClick="Album_ItemClick" 
                   IsItemClickEnabled="True" 
@@ -206,14 +199,12 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-                        <!-- СПИСОК ПЕСЕН АЛЬБОМА (скрыт по умолчанию) -->
                         <Grid x:Name="AlbumSongsPanel" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Шапка с кнопкой назад и названием альбома -->
                             <Grid Grid.Row="0" 
                   Background="{StaticResource MiniPlayerBackgroundBrush}"
                   Height="60"
@@ -246,7 +237,6 @@
                            Margin="10,0,0,0"/>
                             </Grid>
 
-                            <!-- Список песен альбома -->
                             <ListView x:Name="AlbumSongsList"
                       Grid.Row="1"
                       ItemClick="AlbumSong_ItemClick"
@@ -319,7 +309,6 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Поле поиска -->
                         <TextBox x:Name="SearchBox"
                                  Grid.Row="0"
                                  Margin="16,16,16,10"
@@ -332,9 +321,7 @@
                                  FontSize="16"
                                  Padding="12,0,12,0"/>
 
-                        <!-- Контейнер для списка и пустого состояния -->
                         <Grid Grid.Row="1">
-                            <!-- Список результатов (виден когда есть результаты) -->
                             <ListView x:Name="SearchResultsList"
                                       ItemClick="SearchResult_ItemClick"
                                       IsItemClickEnabled="True"
@@ -366,7 +353,6 @@
                                 </ListView.ItemTemplate>
                             </ListView>
 
-                            <!-- Пустое состояние (видно когда нет результатов) -->
                             <StackPanel x:Name="EmptyStatePanel"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"

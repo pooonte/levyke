@@ -22,30 +22,25 @@ namespace levyke
 {
     public sealed partial class MainPage : Page
     {
-        // UI коллекции
         private ObservableCollection<TrackItem> _tracks = new ObservableCollection<TrackItem>();
         private ObservableCollection<ArtistItem> _artists = new ObservableCollection<ArtistItem>();
         private ObservableCollection<AlbumItem> _albums = new ObservableCollection<AlbumItem>();
 
-        // Плеер
         private DispatcherTimer _positionTimer;
         private int _currentTrackIndex = -1;
         private bool _userIsSeeking = false;
         private bool _wasPlayingBeforeSeek = false;
 
-        // Для плейлиста исполнителя
         private List<TrackItem> _currentPlaylist = new List<TrackItem>();
         private bool _isArtistViewActive = false;
         private string _currentArtistName = "";
 
-        // Темы
         private List<ColorPalette> _themes;
 
-        // Состояние загрузки
         private bool _isLoading = false;
         private bool _isInitialized = false;
 
-        // Arduino
+
         private StreamSocket _socket;
         private DataWriter _writer;
         private DataReader _reader;
@@ -61,7 +56,6 @@ namespace levyke
             this.Unloaded += (s, e) => _positionTimer?.Stop();
         }
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
         private async Task InitializeLibraryAsync()
         {
             if (_isLoading) return;
@@ -116,7 +110,6 @@ namespace levyke
             }
         }
 
-        // === ПОКАЗ ТРЕКОВ ИЗ КЭША ===
         private void ShowTracksFromCache(List<CachedTrack> cachedTracks)
         {
             _tracks.Clear();
@@ -178,7 +171,6 @@ namespace levyke
             System.Diagnostics.Debug.WriteLine($"📊 Показано: {_tracks.Count} треков, {_artists.Count} исполнителей, {_albums.Count} альбомов");
         }
 
-        // === ПОИСК ===
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             string searchText = SearchBox.Text.ToLower().Trim();
@@ -231,7 +223,6 @@ namespace levyke
             }
         }
 
-        // === КЛИКИ ПО ЭЛЕМЕНТАМ ===
         private async void Track_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is TrackItem track)
@@ -251,35 +242,28 @@ namespace levyke
             }
         }
 
-        // ==================== ИСПОЛНИТЕЛИ ====================
-
         private void Artist_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is ArtistItem artist)
             {
-                // Получаем все треки этого исполнителя
                 var artistTracks = _tracks
                     .Where(t => t.Artist == artist.Name)
                     .OrderBy(t => t.Album)
                     .ThenBy(t => t.Title)
                     .ToList();
 
-                // Добавляем номера треков
                 int trackNumber = 1;
                 foreach (var track in artistTracks)
                 {
                     track.TrackNumber = trackNumber++;
                 }
 
-                // Устанавливаем текущий плейлист
                 _currentPlaylist = artistTracks;
                 _isArtistViewActive = true;
 
-                // Обновляем UI
                 SelectedArtistName.Text = artist.Name;
                 ArtistSongsList.ItemsSource = artistTracks;
 
-                // Переключаем видимость
                 ArtistsList.Visibility = Visibility.Collapsed;
                 ArtistSongsPanel.Visibility = Visibility.Visible;
             }
@@ -293,7 +277,6 @@ namespace levyke
                 {
                     var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
 
-                    // Находим индекс в текущем плейлисте
                     int index = _currentPlaylist.IndexOf(track);
                     if (index >= 0)
                     {
@@ -310,16 +293,14 @@ namespace levyke
 
         private void BackToArtistsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Возвращаемся к списку исполнителей
+
             ArtistsList.Visibility = Visibility.Visible;
             ArtistSongsPanel.Visibility = Visibility.Collapsed;
 
-            // Восстанавливаем полный плейлист
             _currentPlaylist = _tracks.ToList();
             _isArtistViewActive = false;
         }
 
-        // === ВОСПРОИЗВЕДЕНИЕ ===
         private async void PlayTrack(StorageFile file)
         {
             if (file == null) return;
@@ -327,28 +308,23 @@ namespace levyke
             var track = _tracks.FirstOrDefault(t => t.FilePath == file.Path);
             if (track == null) return;
 
-            // Обновляем индекс в общем списке
             _currentTrackIndex = _tracks.IndexOf(track);
             track.File = file;
 
             MediaPlayerSingleton.PlayFile(file);
 
-            // Сброс слайдера
             ProgressSlider.Value = 0;
             CurrentTimeText.Text = "0:00";
             _userIsSeeking = false;
 
-            // Восстанавливаем громкость
             var saved = ApplicationData.Current.LocalSettings.Values["SavedVolume"];
             MediaPlayerSingleton.Player.Volume = saved is double v ? v : 1.0;
 
-            // Обновляем UI
             MiniTrackTitle.Text = track.Title;
             MiniTrackArtist.Text = track.Artist;
             FullTrackTitle.Text = track.Title;
             FullTrackArtist.Text = track.Artist;
 
-            // Загружаем обложку
             try
             {
                 var thumb = await file.GetThumbnailAsync(
@@ -374,10 +350,9 @@ namespace levyke
         {
             if (_currentPlaylist.Count == 0 || _currentTrackIndex < 0)
             {
-                // Если плейлист пуст — переключение по всей библиотеке
                 if (_tracks.Count == 0) return;
 
-                int globalNextIndex = (_currentTrackIndex + 1) % _tracks.Count;   // ← имя изменено
+                int globalNextIndex = (_currentTrackIndex + 1) % _tracks.Count;
                 var globalNextTrack = _tracks[globalNextIndex];
 
                 try
@@ -389,11 +364,10 @@ namespace levyke
                 return;
             }
 
-            // Переключение в рамках текущего плейлиста
             int currentIndex = _currentPlaylist.FindIndex(t => t.FilePath == _tracks[_currentTrackIndex]?.FilePath);
             if (currentIndex < 0) currentIndex = 0;
 
-            int playlistNextIndex = (currentIndex + 1) % _currentPlaylist.Count;   // ← другое имя
+            int playlistNextIndex = (currentIndex + 1) % _currentPlaylist.Count;
             var playlistNextTrack = _currentPlaylist[playlistNextIndex];
 
             try
@@ -412,7 +386,6 @@ namespace levyke
             _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => PlayNextTrack());
         }
 
-        // === УПРАВЛЕНИЕ ===
         private void UpdatePlayButtonState()
         {
             string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
@@ -457,7 +430,6 @@ namespace levyke
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)
         {
-            // Если текущий плейлист пуст — пробуем использовать общую библиотеку
             if (_currentPlaylist.Count == 0)
             {
                 if (_tracks.Count == 0) return;
@@ -472,11 +444,9 @@ namespace levyke
                 return;
             }
 
-            // Находим индекс текущего трека в плейлисте
             int currentIndex = _currentPlaylist.FindIndex(t => t.FilePath == _tracks[_currentTrackIndex]?.FilePath);
             if (currentIndex < 0) currentIndex = 0;
 
-            // Предыдущий трек в рамках плейлиста
             int prevIndex = (currentIndex - 1 + _currentPlaylist.Count) % _currentPlaylist.Count;
             var prevTrack = _currentPlaylist[prevIndex];
 
@@ -493,7 +463,6 @@ namespace levyke
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            // Если текущий плейлист пуст — пробуем использовать общую библиотеку
             if (_currentPlaylist.Count == 0)
             {
                 if (_tracks.Count == 0) return;
@@ -508,11 +477,9 @@ namespace levyke
                 return;
             }
 
-            // Находим индекс текущего трека в плейлисте
             int currentIndex = _currentPlaylist.FindIndex(t => t.FilePath == _tracks[_currentTrackIndex]?.FilePath);
             if (currentIndex < 0) currentIndex = 0;
 
-            // Следующий трек в рамках плейлиста
             int nextIndex = (currentIndex + 1) % _currentPlaylist.Count;
             var nextTrack = _currentPlaylist[nextIndex];
 
@@ -527,8 +494,6 @@ namespace levyke
             }
         }
 
-
-        // === СЛАЙДЕР ===
         private void ProgressSlider_ManipulationStarted(object sender, Windows.UI.Xaml.Input.ManipulationStartedRoutedEventArgs e)
         {
             _userIsSeeking = true;
@@ -563,7 +528,6 @@ namespace levyke
             }
         }
 
-        // === ТАЙМЕР ===
         private void StartPositionTimer()
         {
             _positionTimer?.Stop();
@@ -589,7 +553,6 @@ namespace levyke
 
         private string FormatTime(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
 
-        // === ТЕМЫ ===
         private void LoadThemes()
         {
             _themes = ThemeManager.GetThemes();
@@ -627,7 +590,6 @@ namespace levyke
             }
         }
 
-        // === ГРОМКОСТЬ ===
         private void VolumeSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
             double vol = e.NewValue / 100.0;
@@ -640,7 +602,6 @@ namespace levyke
             VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 30;
         }
 
-        // === ВСПОМОГАТЕЛЬНЫЕ ===
         private void ShowLoadingIndicator(bool show)
         {
             if (MainPivot != null)
@@ -683,7 +644,6 @@ namespace levyke
                 _albums.Add(album);
         }
 
-        // === ОБНОВЛЕНИЕ БИБЛИОТЕКИ ===
         private async void RefreshLibraryButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isLoading) return;
@@ -733,7 +693,7 @@ namespace levyke
             }
         }
 
-        // === ARDUINO ===
+        //ARDUINO
         private async void ConnectToArduino()
         {
             try
@@ -796,35 +756,29 @@ namespace levyke
             await Task.Delay(100);
             await arduino.SendToArduino($"A:{artist}");
         }
-
-        // ==================== АЛЬБОМЫ ====================
+        //ARDUINO
 
         private void Album_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is AlbumItem album)
             {
-                // Получаем все треки этого альбома
                 var albumTracks = _tracks
                     .Where(t => t.Album == album.Name)
                     .OrderBy(t => t.Title)
                     .ToList();
 
-                // Добавляем номера треков
                 int trackNumber = 1;
                 foreach (var track in albumTracks)
                 {
                     track.TrackNumber = trackNumber++;
                 }
 
-                // Устанавливаем текущий плейлист
                 _currentPlaylist = albumTracks;
-                _isArtistViewActive = false; // Сбрасываем флаг исполнителя
+                _isArtistViewActive = false; 
 
-                // Обновляем UI
                 SelectedAlbumName.Text = album.Name;
                 AlbumSongsList.ItemsSource = albumTracks;
 
-                // Переключаем видимость
                 AlbumsList.Visibility = Visibility.Collapsed;
                 AlbumSongsPanel.Visibility = Visibility.Visible;
             }
@@ -838,7 +792,6 @@ namespace levyke
                 {
                     var file = await StorageFile.GetFileFromPathAsync(track.FilePath);
 
-                    // Находим индекс в текущем плейлисте
                     int index = _currentPlaylist.IndexOf(track);
                     if (index >= 0)
                     {
@@ -855,11 +808,9 @@ namespace levyke
 
         private void BackToAlbumsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Возвращаемся к списку альбомов
             AlbumsList.Visibility = Visibility.Visible;
             AlbumSongsPanel.Visibility = Visibility.Collapsed;
 
-            // Восстанавливаем полный плейлист
             _currentPlaylist = _tracks.ToList();
             _isArtistViewActive = false;
         }
