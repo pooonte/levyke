@@ -416,104 +416,114 @@
             </Grid>
         </Grid>
 
-        <!-- FullPlayerOverlay - структура 1:1, только цвета заменены -->
         <Grid x:Name="FullPlayerOverlay"
-              Visibility="Collapsed"
-              Background="{StaticResource MainBackgroundBrush}"
-              Loaded="FullPlayerOverlay_Loaded"
-              Canvas.ZIndex="100">
+      Visibility="Collapsed"
+      Background="{StaticResource MainBackgroundBrush}"
+      Loaded="FullPlayerOverlay_Loaded"
+      Canvas.ZIndex="100">
 
-            <Image x:Name="FullAlbumArt"
-                   Width="140"
-                   Height="140"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Bottom"
-                   Margin="20,0,0,120"/>
+            <Grid HorizontalAlignment="Left" 
+          VerticalAlignment="Bottom"
+          Margin="20,0,0,120">
+
+                <Border BorderBrush="White" 
+                BorderThickness="2" 
+                Width="280" 
+                Height="280">
+                    <Image x:Name="FullAlbumArt"
+                   Width="276"
+                   Height="276"
+                   Stretch="UniformToFill"/>
+                </Border>
+
+                <Grid VerticalAlignment="Bottom"
+              Background="White" 
+              Margin="0,12,12,12"
+              Padding="15,12"
+              MaxWidth="280">
+                    <StackPanel>
+                        <TextBlock x:Name="FullTrackTitle" 
+                           Text="I Follow Rivers (The Magician Remix)" 
+                           Foreground="Black" 
+                           FontSize="20" 
+                           FontFamily="Segoe UI Light"
+                           TextWrapping="Wrap"/>
+                        <TextBlock x:Name="FullTrackArtist" 
+                           Text="Lykke Li" 
+                           Foreground="#666666" 
+                           FontSize="14" 
+                           FontFamily="Segoe UI Light"
+                           Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
 
             <Button x:Name="BackButton"
-                    Content="←"
-                    FontSize="24"
-                    Width="50"
-                    Height="50"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Margin="16,16,0,0"
-                    Background="Transparent"
-                    Foreground="{StaticResource TextBrush}"
-                    Click="BackButton_Click"/>
-
-            <TextBlock x:Name="FullTrackTitle"
-                       Foreground="{StaticResource TextBrush}"
-                       FontSize="24"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,200"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
-
-            <TextBlock x:Name="FullTrackArtist"
-                       Foreground="{StaticResource TextBrush}"
-                       FontSize="18"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,177"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
+            Content="←"
+            FontSize="24"
+            Width="50"
+            Height="50"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="16,16,0,0"
+            Background="Transparent"
+            Foreground="{StaticResource TextBrush}"
+            Click="BackButton_Click"/>
 
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="15,0,0,60">
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="15,0,0,60">
                 <TextBlock x:Name="CurrentTimeText" 
-                           Text="0:00" 
-                           Foreground="{StaticResource TextBrush}" 
-                           Margin="0,0,10,0"/>
+                   Text="0:00" 
+                   Foreground="{StaticResource TextBrush}" 
+                   Margin="0,0,10,0"/>
                 <Slider x:Name="ProgressSlider"
-                        Width="250"
-                        Height="30"
-                        Foreground="{StaticResource AccentBrush}"
-                        ManipulationMode="TranslateX"
-                        ManipulationStarted="ProgressSlider_ManipulationStarted"
-                        ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
+                Width="250"
+                Height="30"
+                Foreground="{StaticResource AccentBrush}"
+                ManipulationMode="TranslateX"
+                ManipulationStarted="ProgressSlider_ManipulationStarted"
+                ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
                 <TextBlock x:Name="TotalTimeText" 
-                           Text="0:00" 
-                           Foreground="{StaticResource TextBrush}" 
-                           Margin="10,0,0,0"/>
+                   Text="0:00" 
+                   Foreground="{StaticResource TextBrush}" 
+                   Margin="10,0,0,0"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="10,0,0,10">
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="10,0,0,10">
                 <Button x:Name="PrevButton" 
-                        Click="PrevButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AccentBrush}" 
-                        FontSize="24" >
+                Click="PrevButton_Click" 
+                Background="Transparent" 
+                Foreground="{StaticResource AccentBrush}" 
+                FontSize="24" >
                     <Image x:Name="PrevButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/prev.png"/>
                 </Button>
                 <Button x:Name="PlayPauseButton" 
-                        Click="PlayPauseButton_Click"
-                        Background="Transparent"
-                        Foreground="{StaticResource AccentBrush}"
-                        FontSize="24">
+                Click="PlayPauseButton_Click"
+                Background="Transparent"
+                Foreground="{StaticResource AccentBrush}"
+                FontSize="24">
                     <Image x:Name="FullPlayPauseIcon" Width="24" Height="24" />
                 </Button>
                 <Button x:Name="NextButton" 
-                        Click="NextButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AccentBrush}" 
-                        FontSize="24">
+                Click="NextButton_Click" 
+                Background="Transparent" 
+                Foreground="{StaticResource AccentBrush}" 
+                FontSize="24">
                     <Image x:Name="NextButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/next.png"/>
                 </Button>
                 <Slider x:Name="VolumeSlider"
-                       Margin="10,0,0,0"
-                       Width="150"
-                       Minimum="0"
-                       Maximum="100"
-                       Value="100"
-                       Foreground="{StaticResource AccentBrush}"
-                       ValueChanged="VolumeSlider_ValueChanged"/>
+               Margin="10,0,0,0"
+               Width="150"
+               Minimum="0"
+               Maximum="100"
+               Value="100"
+               Foreground="{StaticResource AccentBrush}"
+               ValueChanged="VolumeSlider_ValueChanged"/>
             </StackPanel>
         </Grid>
     </Grid>
