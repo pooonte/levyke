@@ -45,25 +45,6 @@ namespace levyke
                 Window.Current.Content = rootFrame;
             }
 
-            // >>> ЗАГРУЖАЕМ ТЕМУ <<<
-            try
-            {
-                var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
-                if (savedIndex != null)
-                {
-                    var themes = ThemeManager.GetThemes(); // Вместо ThemeProvider
-                    int index = (int)savedIndex;
-                    if (index >= 0 && index < themes.Count)
-                    {
-                        ThemeManager.Apply(themes[index]); // Вместо ThemeService
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки темы: {ex.Message}");
-            }
-            // <<< КОНЕЦ >>>
 
             if (e.PrelaunchActivated == false)
             {
