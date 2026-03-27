@@ -388,13 +388,22 @@ namespace levyke
 
         private void UpdatePlayButtonState()
         {
-            string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
-            var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
+            // Для SymbolIcon используем Symbol вместо Source
+            var symbol = MediaPlayerSingleton.IsPlaying ? Symbol.Pause : Symbol.Play;
 
+            // Обновляем кнопку в полноэкранном плеере (SymbolIcon)
+            if (FullPlayPauseIcon is SymbolIcon fullIcon)
+            {
+                fullIcon.Symbol = symbol;
+            }
+
+            // Обновляем кнопку в мини-плеере (Image)
             if (MiniPlayButton.Content is Image miniImage)
+            {
+                string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
+                var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
                 miniImage.Source = source;
-
-            FullPlayPauseIcon.Source = source;
+            }
         }
 
         private void PlaybackSession_PlaybackStateChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)

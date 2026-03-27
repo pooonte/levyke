@@ -442,101 +442,211 @@
         </Grid>
 
         <Grid x:Name="FullPlayerOverlay"
-              Visibility="Collapsed"
-              Background="{StaticResource MainBackgroundBrush}"
-                    Loaded="FullPlayerOverlay_Loaded"
-              Canvas.ZIndex="100">
+      Visibility="Collapsed"
+      Background="#1a1a1a"
+      Loaded="FullPlayerOverlay_Loaded"
+      Canvas.ZIndex="100">
 
-            <Image x:Name="FullAlbumArt"
-                   Width="140"
-                   Height="140"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Bottom"
-                   Margin="20,0,0,120"/>
+            <!-- Фон с размытой обложкой (опционально) -->
+            <Image x:Name="BackgroundAlbumArt"
+           Stretch="UniformToFill"
+           Opacity="0.3"/>
 
+            <!-- Кнопка Назад -->
             <Button x:Name="BackButton"
-                    Content="←"
-                    FontSize="24"
-                    Width="50"
-                    Height="50"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Margin="16,16,0,0"
-                    Background="Transparent"
-                    Foreground="White"
-                    Click="BackButton_Click"/>
+            Content="←"
+            FontSize="24"
+            Width="50"
+            Height="50"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="20,20,0,0"
+            Background="Transparent"
+            Foreground="White"
+            Click="BackButton_Click"/>
 
-            <TextBlock x:Name="FullTrackTitle"
-                       Foreground="White"
-                       FontSize="24"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,200"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
-
-            <TextBlock x:Name="FullTrackArtist"
-                       Foreground="White"
-                       FontSize="18"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,177"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
-
+            <!-- Заголовок NOW PLAYING -->
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="15,0,0,60">
-                <TextBlock x:Name="CurrentTimeText" 
-                           Text="0:00" 
-                           Foreground="White" 
-                           Margin="0,0,10,0"/>
-                <Slider x:Name="ProgressSlider"
-                        Width="250"
-                        Height="30"
-                        Foreground="{StaticResource AppTitleBrush}"
-                        ManipulationMode="TranslateX"
-                        ManipulationStarted="ProgressSlider_ManipulationStarted"
-                        ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
-                <TextBlock x:Name="TotalTimeText" 
-                           Text="0:00" 
-                           Foreground="White" 
-                           Margin="10,0,0,0"/>
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,30,0,0">
+                <TextBlock Text="NOW PLAYING"
+                   Foreground="White"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Margin="0,0,20,0"/>
+                <TextBlock Text="QUEUE"
+                   Foreground="#888888"
+                   FontSize="20"
+                   FontWeight="SemiBold"/>
             </StackPanel>
 
+            <!-- Обложка альбома с белой рамкой -->
+            <Grid HorizontalAlignment="Center" 
+          VerticalAlignment="Center"
+          Margin="0,-40,0,0">
+                <Border BorderBrush="White" 
+                BorderThickness="2" 
+                Width="340" 
+                Height="340">
+                    <Image x:Name="FullAlbumArt"
+                   Width="336"
+                   Height="336"
+                   Stretch="UniformToFill"/>
+                </Border>
+
+                <!-- Текст поверх обложки (внизу слева) -->
+                <Grid VerticalAlignment="Bottom" 
+              HorizontalAlignment="Left" 
+              Background="White" 
+              Margin="20,0,0,20"
+              Padding="15,12"
+              MaxWidth="280">
+                    <StackPanel>
+                        <TextBlock x:Name="FullTrackTitle" 
+                           Text="I Follow Rivers (The Magician Remix)" 
+                           Foreground="Black" 
+                           FontSize="20" 
+                           FontFamily="Segoe UI Light"
+                           TextWrapping="Wrap"
+                           MaxWidth="250"/>
+                        <TextBlock x:Name="FullTrackArtist" 
+                           Text="Lykke Li" 
+                           Foreground="#666666" 
+                           FontSize="14" 
+                           FontFamily="Segoe UI Light"
+                           Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <!-- Прогресс бар -->
+            <Grid VerticalAlignment="Bottom" 
+          Margin="40,0,40,150">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="CurrentTimeText" 
+                   Text="1:47" 
+                   Foreground="#aaaaaa" 
+                   FontSize="12" 
+                   VerticalAlignment="Center"/>
+                <Slider x:Name="ProgressSlider"
+                Grid.Column="1"
+                Margin="20,0"
+                Height="4"
+                Foreground="White"
+                Background="#444444"
+                ManipulationMode="TranslateX"
+                ManipulationStarted="ProgressSlider_ManipulationStarted"
+                ManipulationCompleted="ProgressSlider_ManipulationCompleted"/>
+                <TextBlock x:Name="TotalTimeText" 
+                   Grid.Column="2"
+                   Text="4:43" 
+                   Foreground="#aaaaaa" 
+                   FontSize="12" 
+                   VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Кнопки управления -->
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="10,0,0,10">
-                <Button x:Name="PrevButton" 
-                        Click="PrevButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24" >
-                    <Image x:Name="PrevButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/prev.png"/>
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,70">
+
+                <!-- Shuffle -->
+                <Button x:Name="ShuffleButton"
+                Background="Transparent"
+                Width="50"
+                Height="50"
+                Margin="10,0">
+                    <SymbolIcon Symbol="Shuffle" 
+                        Foreground="White" 
+                        Width="24" 
+                        Height="24"/>
                 </Button>
-                <Button x:Name="PlayPauseButton" 
-        Click="PlayPauseButton_Click"
-        Background="Transparent"
-        Foreground="{StaticResource AppTitleBrush}"
-        FontSize="24">
-                    <Image x:Name="FullPlayPauseIcon" Width="24" Height="24" />
+
+                <!-- Previous -->
+                <Button x:Name="PrevButton"
+                Click="PrevButton_Click"
+                Background="Transparent"
+                Width="60"
+                Height="60"
+                Margin="15,0">
+                    <Border BorderBrush="White" 
+                    BorderThickness="1.5" 
+                    CornerRadius="30" 
+                    Width="56" 
+                    Height="56">
+                        <SymbolIcon Symbol="Previous" 
+                            Foreground="White" 
+                            Width="22" 
+                            Height="22"/>
+                    </Border>
                 </Button>
-                <Button x:Name="NextButton" 
-                        Click="NextButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24">
-                    <Image x:Name="NextButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/next.png"/>
+
+                <!-- Play/Pause (большая) -->
+                <Button x:Name="PlayPauseButton"
+                Click="PlayPauseButton_Click"
+                Background="Transparent"
+                Width="80"
+                Height="80"
+                Margin="15,0">
+                    <Border BorderBrush="White" 
+                    BorderThickness="2" 
+                    CornerRadius="40" 
+                    Width="76" 
+                    Height="76">
+                        <SymbolIcon x:Name="FullPlayPauseIcon" 
+                            Symbol="Play" 
+                            Foreground="White" 
+                            Width="32" 
+                            Height="32"/>
+                    </Border>
+                </Button>
+
+                <!-- Next -->
+                <Button x:Name="NextButton"
+                Click="NextButton_Click"
+                Background="Transparent"
+                Width="60"
+                Height="60"
+                Margin="15,0">
+                    <Border BorderBrush="White" 
+                    BorderThickness="1.5" 
+                    CornerRadius="30" 
+                    Width="56" 
+                    Height="56">
+                        <SymbolIcon Symbol="Next" 
+                            Foreground="White" 
+                            Width="22" 
+                            Height="22"/>
+                    </Border>
+                </Button>
+
+                <!-- Repeat -->
+                <Button x:Name="RepeatButton"
+                Background="Transparent"
+                Width="50"
+                Height="50"
+                Margin="10,0">
+                    <SymbolIcon Symbol="RepeatAll" 
+                        Foreground="White" 
+                        Width="24" 
+                        Height="24"/>
                 </Button>
                 <Slider x:Name="VolumeSlider"
-                       Margin="10,0,0,0"
-                       Width="150"
+        Margin="20,10,0,0"
+        Width="120"
+        Height="40"
         Minimum="0"
         Maximum="100"
         Value="100"
         Foreground="{StaticResource AppTitleBrush}"
+        Background="#444444"
+        VerticalAlignment="Center"
         ValueChanged="VolumeSlider_ValueChanged"/>
             </StackPanel>
         </Grid>
