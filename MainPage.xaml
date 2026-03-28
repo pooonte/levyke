@@ -423,18 +423,18 @@
       Canvas.ZIndex="100">
 
             <Grid HorizontalAlignment="Left" 
-          VerticalAlignment="Bottom"
-          Margin="20,0,0,120">
+      VerticalAlignment="Bottom"
+      Margin="20,0,0,120">
 
                 <Border BorderBrush="White" 
-        BorderThickness="2" 
-        Width="276" 
-        Height="276">
+            BorderThickness="2" 
+            Width="276" 
+            Height="276">
                     <Grid>
                         <Image x:Name="FullAlbumArt"
-               Width="272"
-               Height="272"
-               Stretch="UniformToFill"/>
+                   Width="272"
+                   Height="272"
+                   Stretch="UniformToFill"/>
 
                         <Border Height="6" VerticalAlignment="Top">
                             <Border.Background>
@@ -474,23 +474,22 @@
                 </Border>
 
                 <Grid VerticalAlignment="Bottom"
-              Background="White" 
-              Margin="0,12,12,12"
-              Padding="15,12"
-              MaxWidth="280">
+                      Background="White" 
+                      Margin="-12,6,10,8"
+                      Padding="10,8"
+                      MaxWidth="252">
                     <StackPanel>
                         <TextBlock x:Name="FullTrackTitle" 
-                           Text="I Follow Rivers (The Magician Remix)" 
-                           Foreground="Black" 
-                           FontSize="20" 
-                           FontFamily="Segoe UI Light"
-                           TextWrapping="Wrap"/>
+                       Foreground="Black" 
+                       FontSize="18" 
+                       FontFamily="Segoe UI Light"
+                       TextWrapping="Wrap"
+                       MaxWidth="230"/>
                         <TextBlock x:Name="FullTrackArtist" 
-                           Text="Lykke Li" 
-                           Foreground="#666666" 
-                           FontSize="14" 
-                           FontFamily="Segoe UI Light"
-                           Margin="0,5,0,0"/>
+                       Foreground="#666666" 
+                       FontSize="13" 
+                       FontFamily="Segoe UI Light"
+                       Margin="0,5,0,0"/>
                     </StackPanel>
                 </Grid>
             </Grid>
