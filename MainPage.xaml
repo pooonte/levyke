@@ -475,16 +475,16 @@
 
                 <Grid VerticalAlignment="Bottom"
                       Background="White" 
-                      Margin="-12,6,10,8"
+                      Margin="-62,6,10,16"
                       Padding="10,8"
-                      MaxWidth="252">
+                      MaxWidth="200">
                     <StackPanel>
                         <TextBlock x:Name="FullTrackTitle" 
                        Foreground="Black" 
                        FontSize="18" 
                        FontFamily="Segoe UI Light"
                        TextWrapping="Wrap"
-                       MaxWidth="230"/>
+                       MaxWidth="250"/>
                         <TextBlock x:Name="FullTrackArtist" 
                        Foreground="#666666" 
                        FontSize="13" 
