@@ -28,17 +28,17 @@
                                                TextWrapping="Wrap"
                                                MaxWidth="280">
                                         <Run Text="{Binding Title}"
-                                             Foreground="White"
+                                             Foreground="{StaticResource TextBrush}"
                                              FontSize="14"/>
                                         <LineBreak />
                                         <Run Text="{Binding Artist}"
-                                             Foreground="White"
+                                             Foreground="{StaticResource TextBrush}"
                                              FontSize="12"/>
                                         <Run Text=" --- "
-                                             Foreground="White"
+                                             Foreground="{StaticResource TextSecondaryBrush}"
                                              FontSize="12"/>
                                         <Run Text="{Binding Album}"
-                                             Foreground="White"
+                                             Foreground="{StaticResource TextSecondaryBrush}"
                                              FontSize="12"/>
                                     </TextBlock>
                                 </Grid>
@@ -50,30 +50,30 @@
                 <PivotItem Header="Исполнители" FontSize="22">
                     <Grid>
                         <ListView x:Name="ArtistsList" 
-                  ItemClick="Artist_ItemClick" 
-                  IsItemClickEnabled="True" 
-                  Background="Transparent"
-                  Visibility="Visible">
+                                  ItemClick="Artist_ItemClick" 
+                                  IsItemClickEnabled="True" 
+                                  Background="Transparent"
+                                  Visibility="Visible">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="16,8">
                                         <TextBlock Text="{Binding Name}" 
-                                   Foreground="White" 
-                                   FontSize="16"
-                                   VerticalAlignment="Center"/>
+                                                   Foreground="{StaticResource TextBrush}" 
+                                                   FontSize="16"
+                                                   VerticalAlignment="Center"/>
                                         <TextBlock Text=" (" 
-                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                   FontSize="14"
-                                   Margin="4,0,0,0"
-                                   VerticalAlignment="Center"/>
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   FontSize="14"
+                                                   Margin="4,0,0,0"
+                                                   VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding TrackCount}" 
-                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"/>
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
                                         <TextBlock Text=")" 
-                                   Foreground="{StaticResource PlaybackControlBrush}"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"/>
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -86,43 +86,43 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" 
-                  Background="{StaticResource MiniPlayerBackgroundBrush}"
-                  Height="60"
-                  Padding="16">
+                                  Background="{StaticResource MiniPlayerBackgroundBrush}"
+                                  Height="60"
+                                  Padding="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
                                 <Button x:Name="BackToArtistsButton"
-                        Grid.Column="0"
-                        Width="40"
-                        Height="40"
-                        Background="Transparent"
-                        Click="BackToArtistsButton_Click">
+                                        Grid.Column="0"
+                                        Width="40"
+                                        Height="40"
+                                        Background="Transparent"
+                                        Click="BackToArtistsButton_Click">
                                     <TextBlock Text="←" 
-                               FontSize="24" 
-                               Foreground="White"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"/>
+                                               FontSize="24" 
+                                               Foreground="{StaticResource TextBrush}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
                                 </Button>
 
                                 <TextBlock Grid.Column="1"
-                           x:Name="SelectedArtistName"
-                           Text="Исполнитель"
-                           Foreground="White"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"
-                           Margin="10,0,0,0"/>
+                                           x:Name="SelectedArtistName"
+                                           Text="Исполнитель"
+                                           Foreground="{StaticResource TextBrush}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Margin="10,0,0,0"/>
                             </Grid>
 
                             <ListView x:Name="ArtistSongsList"
-                      Grid.Row="1"
-                      ItemClick="ArtistSong_ItemClick"
-                      IsItemClickEnabled="True"
-                      Background="Transparent"
-                      Margin="0,8,0,0">
+                                      Grid.Row="1"
+                                      ItemClick="ArtistSong_ItemClick"
+                                      IsItemClickEnabled="True"
+                                      Background="Transparent"
+                                      Margin="0,8,0,0">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Height="50" Margin="16,8">
@@ -133,30 +133,30 @@
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock Grid.Column="0" 
-                                       Text="{Binding TrackNumber}" 
-                                       Foreground="Gray"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                                                       Text="{Binding TrackNumber}" 
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="14"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
 
                                             <StackPanel Grid.Column="1" 
-                                        VerticalAlignment="Center">
+                                                        VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Title}" 
-                                           Foreground="White" 
-                                           FontSize="16"
-                                           FontWeight="SemiBold"/>
+                                                           Foreground="{StaticResource TextBrush}" 
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding Album}" 
-                                           Foreground="Gray" 
-                                           FontSize="12"
-                                           Margin="0,2,0,0"/>
+                                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                                           FontSize="12"
+                                                           Margin="0,2,0,0"/>
                                             </StackPanel>
 
                                             <TextBlock Grid.Column="2" 
-                                       Text="{Binding DurationString}" 
-                                       Foreground="Gray"
-                                       FontSize="12"
-                                       Margin="0,0,16,0"
-                                       VerticalAlignment="Center"/>
+                                                       Text="{Binding DurationString}" 
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="12"
+                                                       Margin="0,0,16,0"
+                                                       VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
@@ -168,31 +168,31 @@
                 <PivotItem Header="Альбомы" FontSize="22">
                     <Grid>
                         <ListView x:Name="AlbumsList" 
-                  ItemClick="Album_ItemClick" 
-                  IsItemClickEnabled="True" 
-                  Background="Transparent"
-                  Visibility="Visible">
+                                  ItemClick="Album_ItemClick" 
+                                  IsItemClickEnabled="True" 
+                                  Background="Transparent"
+                                  Visibility="Visible">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="16,8">
                                         <TextBlock Text="{Binding Name}" 
-                                   Foreground="White" 
-                                   FontSize="16"
-                                   TextTrimming="CharacterEllipsis"/>
+                                                   Foreground="{StaticResource TextBrush}" 
+                                                   FontSize="16"
+                                                   TextTrimming="CharacterEllipsis"/>
                                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                             <TextBlock Text="{Binding Artist}" 
-                                       Foreground="{StaticResource PlaybackControlBrush}"
-                                       FontSize="12"/>
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       FontSize="12"/>
                                             <TextBlock Text=" — " 
-                                       Foreground="{StaticResource PlaybackControlBrush}"
-                                       FontSize="12"/>
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       FontSize="12"/>
                                             <TextBlock Text="{Binding TrackCount}" 
-                                       Foreground="{StaticResource PlaybackControlBrush}"
-                                       FontSize="12"/>
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       FontSize="12"/>
                                             <TextBlock Text=" треков" 
-                                       Foreground="{StaticResource PlaybackControlBrush}"
-                                       FontSize="12"
-                                       Margin="2,0,0,0"/>
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       FontSize="12"
+                                                       Margin="2,0,0,0"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
@@ -206,43 +206,43 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" 
-                  Background="{StaticResource MiniPlayerBackgroundBrush}"
-                  Height="60"
-                  Padding="16">
+                                  Background="{StaticResource MiniPlayerBackgroundBrush}"
+                                  Height="60"
+                                  Padding="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
                                 <Button x:Name="BackToAlbumsButton"
-                        Grid.Column="0"
-                        Width="40"
-                        Height="40"
-                        Background="Transparent"
-                        Click="BackToAlbumsButton_Click">
+                                        Grid.Column="0"
+                                        Width="40"
+                                        Height="40"
+                                        Background="Transparent"
+                                        Click="BackToAlbumsButton_Click">
                                     <TextBlock Text="←" 
-                               FontSize="24" 
-                               Foreground="White"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"/>
+                                               FontSize="24" 
+                                               Foreground="{StaticResource TextBrush}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
                                 </Button>
 
                                 <TextBlock Grid.Column="1"
-                           x:Name="SelectedAlbumName"
-                           Text="Альбом"
-                           Foreground="White"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"
-                           Margin="10,0,0,0"/>
+                                           x:Name="SelectedAlbumName"
+                                           Text="Альбом"
+                                           Foreground="{StaticResource TextBrush}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Margin="10,0,0,0"/>
                             </Grid>
 
                             <ListView x:Name="AlbumSongsList"
-                      Grid.Row="1"
-                      ItemClick="AlbumSong_ItemClick"
-                      IsItemClickEnabled="True"
-                      Background="Transparent"
-                      Margin="0,8,0,0">
+                                      Grid.Row="1"
+                                      ItemClick="AlbumSong_ItemClick"
+                                      IsItemClickEnabled="True"
+                                      Background="Transparent"
+                                      Margin="0,8,0,0">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Height="50" Margin="16,8">
@@ -253,30 +253,30 @@
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock Grid.Column="0" 
-                                       Text="{Binding TrackNumber}" 
-                                       Foreground="Gray"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                                                       Text="{Binding TrackNumber}" 
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="14"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center"/>
 
                                             <StackPanel Grid.Column="1" 
-                                        VerticalAlignment="Center">
+                                                        VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Title}" 
-                                           Foreground="White" 
-                                           FontSize="16"
-                                           FontWeight="SemiBold"/>
+                                                           Foreground="{StaticResource TextBrush}" 
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding Artist}" 
-                                           Foreground="Gray" 
-                                           FontSize="12"
-                                           Margin="0,2,0,0"/>
+                                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                                           FontSize="12"
+                                                           Margin="0,2,0,0"/>
                                             </StackPanel>
 
                                             <TextBlock Grid.Column="2" 
-                                       Text="{Binding DurationString}" 
-                                       Foreground="Gray"
-                                       FontSize="12"
-                                       Margin="0,0,16,0"
-                                       VerticalAlignment="Center"/>
+                                                       Text="{Binding DurationString}" 
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="12"
+                                                       Margin="0,0,16,0"
+                                                       VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
@@ -285,23 +285,6 @@
                     </Grid>
                 </PivotItem>
 
-                <PivotItem Header="Онлайн" FontSize="22">
-                    <Grid>
-                        <StackPanel VerticalAlignment="Center" 
-                    HorizontalAlignment="Center" >
-                            <TextBlock Text="Нужны онлайн функции?" 
-                       Foreground="White" 
-                       FontSize="22"/>
-                            <Button Content="Да" 
-                    Click="OpenOnlinePage_Click" 
-                    Height="45" 
-                    Width="260"
-                    Background="{StaticResource PlaybackControlBrush}" 
-                    Foreground="White"/>
-                        </StackPanel>
-                    </Grid>
-                </PivotItem>
-                
                 <PivotItem Header="Поиск" FontSize="22" Margin="0">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -314,9 +297,9 @@
                                  Margin="16,16,16,10"
                                  PlaceholderText="Введите название трека, исполнителя или альбома..."
                                  TextChanged="SearchBox_TextChanged"
-                                 Background="{StaticResource MiniPlayerBackgroundBrush}"
-                                 Foreground="White"
-                                 BorderBrush="{StaticResource PlaybackControlBrush}"
+                                 Background="{StaticResource SurfaceBrush}"
+                                 Foreground="{StaticResource TextBrush}"
+                                 BorderBrush="{StaticResource AccentBrush}"
                                  BorderThickness="2"
                                  FontSize="16"
                                  Padding="12,0,12,0"/>
@@ -335,17 +318,17 @@
                                                        TextWrapping="Wrap"
                                                        MaxWidth="280">
                                                 <Run Text="{Binding Title}"
-                                                     Foreground="White"
+                                                     Foreground="{StaticResource TextBrush}"
                                                      FontSize="14"/>
                                                 <LineBreak />
                                                 <Run Text="{Binding Artist}"
-                                                     Foreground="White"
+                                                     Foreground="{StaticResource TextSecondaryBrush}"
                                                      FontSize="12"/>
                                                 <Run Text=" --- "
-                                                     Foreground="White"
+                                                     Foreground="{StaticResource TextSecondaryBrush}"
                                                      FontSize="12"/>
                                                 <Run Text="{Binding Album}"
-                                                     Foreground="White"
+                                                     Foreground="{StaticResource TextSecondaryBrush}"
                                                      FontSize="12"/>
                                             </TextBlock>
                                         </Grid>
@@ -380,29 +363,21 @@
 
                 <PivotItem Header="Настройки">
                     <StackPanel>
-                        <TextBlock Text="Выберите тему:"
-                                   Foreground="White"
-                                   Margin="15,15,100,15" Height="24"/>
-                        <ComboBox x:Name="ThemeSelector"
-                                  SelectionChanged="ThemeSelector_SelectionChanged"
-                                  Foreground="White"
-                                  Background="{StaticResource MiniPlayerBackgroundBrush}" Width="222"
-                                  Margin="14,0,0,0"/>
                         <Button x:Name="RefreshLibraryButton"
                                 Content="⟳ Обновить библиотеку"
                                 Click="RefreshLibraryButton_Click"
                                 Margin="15,30,15,0"
                                 Height="45"
-                                Background="{StaticResource MiniPlayerBackgroundBrush}"
-                                Foreground="White"
+                                Background="{StaticResource SurfaceBrush}"
+                                Foreground="{StaticResource TextBrush}"
                                 BorderThickness="0"
                                 FontSize="16"/>
 
                         <TextBlock Text="При обновлении библиотеки приложение пересканирует все папки и найдет новые треки. Это может занять некоторое время."
-                   Foreground="#AAAAAA"
-                   FontSize="12"
-                   TextWrapping="Wrap"
-                   Margin="15,10,15,0"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="15,10,15,0"/>
                     </StackPanel>
                 </PivotItem>
             </Pivot>
@@ -421,8 +396,8 @@
                     <StackPanel Orientation="Horizontal" Margin="12,0">
                         <Image x:Name="MiniAlbumArt" Width="40" Height="40" Stretch="UniformToFill"/>
                         <StackPanel Margin="10,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                            <TextBlock x:Name="MiniTrackTitle" Foreground="White" FontSize="14" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="MiniTrackArtist" Foreground="White" FontSize="12" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MiniTrackTitle" Foreground="{StaticResource TextBrush}" FontSize="14" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MiniTrackArtist" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </StackPanel>
                 </Button>
@@ -433,7 +408,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Margin="0,0,16,0"
-                        Background="{StaticResource PlaybackControlBrush}"
+                        Background="{StaticResource AccentBrush}"
                         Foreground="{StaticResource PlaybackControlForegroundBrush}"
                         Click="MiniPlayButton_Click">
                     <Image x:Name="MiniPlayPauseIcon" Width="24" Height="24"/>
@@ -442,102 +417,149 @@
         </Grid>
 
         <Grid x:Name="FullPlayerOverlay"
-              Visibility="Collapsed"
-              Background="{StaticResource MainBackgroundBrush}"
-                    Loaded="FullPlayerOverlay_Loaded"
-              Canvas.ZIndex="100">
+      Visibility="Collapsed"
+      Background="{StaticResource MainBackgroundBrush}"
+      Loaded="FullPlayerOverlay_Loaded"
+      Canvas.ZIndex="100">
 
-            <Image x:Name="FullAlbumArt"
-                   Width="140"
-                   Height="140"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Bottom"
-                   Margin="20,0,0,120"/>
+            <Grid HorizontalAlignment="Left" 
+      VerticalAlignment="Bottom"
+      Margin="20,0,0,120">
+
+                <Border BorderBrush="White" 
+            BorderThickness="2" 
+            Width="276" 
+            Height="276">
+                    <Grid>
+                        <Image x:Name="FullAlbumArt"
+                   Width="272"
+                   Height="272"
+                   Stretch="UniformToFill"/>
+
+                        <Border Height="6" VerticalAlignment="Top">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FF000000" Offset="0"/>
+                                    <GradientStop Color="#00000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        <Border Height="6" VerticalAlignment="Bottom">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                                    <GradientStop Color="#FF000000" Offset="0"/>
+                                    <GradientStop Color="#00000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <Border Width="6" HorizontalAlignment="Left">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FF000000" Offset="0"/>
+                                    <GradientStop Color="#00000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <Border Width="6" HorizontalAlignment="Right">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="1,0" EndPoint="0,0">
+                                    <GradientStop Color="#FF000000" Offset="0"/>
+                                    <GradientStop Color="#00000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid VerticalAlignment="Bottom"
+                      Background="White" 
+                      Margin="-62,6,10,16"
+                      Padding="10,8"
+                      MaxWidth="200">
+                    <StackPanel>
+                        <TextBlock x:Name="FullTrackTitle" 
+                       Foreground="Black" 
+                       FontSize="18" 
+                       FontFamily="Segoe UI Light"
+                       TextWrapping="Wrap"
+                       MaxWidth="250"/>
+                        <TextBlock x:Name="FullTrackArtist" 
+                       Foreground="#666666" 
+                       FontSize="13" 
+                       FontFamily="Segoe UI Light"
+                       Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
 
             <Button x:Name="BackButton"
-                    Content="←"
-                    FontSize="24"
-                    Width="50"
-                    Height="50"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Margin="16,16,0,0"
-                    Background="Transparent"
-                    Foreground="White"
-                    Click="BackButton_Click"/>
-
-            <TextBlock x:Name="FullTrackTitle"
-                       Foreground="White"
-                       FontSize="24"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,200"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
-
-            <TextBlock x:Name="FullTrackArtist"
-                       Foreground="White"
-                       FontSize="18"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="170,0,0,177"
-                       MaxWidth="300"
-                       TextWrapping="Wrap"/>
+            Content="←"
+            FontSize="24"
+            Width="50"
+            Height="50"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="16,16,0,0"
+            Background="Transparent"
+            Foreground="{StaticResource TextBrush}"
+            Click="BackButton_Click"/>
 
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="15,0,0,60">
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="15,0,0,60">
                 <TextBlock x:Name="CurrentTimeText" 
-                           Text="0:00" 
-                           Foreground="White" 
-                           Margin="0,0,10,0"/>
+                   Text="0:00" 
+                   Foreground="{StaticResource TextBrush}" 
+                   Margin="0,0,10,0"/>
                 <Slider x:Name="ProgressSlider"
-                        Width="250"
-                        Height="30"
-                        Foreground="{StaticResource AppTitleBrush}"
-                        ManipulationMode="TranslateX"
-                        ManipulationStarted="ProgressSlider_ManipulationStarted"
-                        ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
+                Width="250"
+                Height="30"
+                Foreground="{StaticResource AccentBrush}"
+                ManipulationMode="TranslateX"
+                ManipulationStarted="ProgressSlider_ManipulationStarted"
+                ManipulationCompleted="ProgressSlider_ManipulationCompleted" />
                 <TextBlock x:Name="TotalTimeText" 
-                           Text="0:00" 
-                           Foreground="White" 
-                           Margin="10,0,0,0"/>
+                   Text="0:00" 
+                   Foreground="{StaticResource TextBrush}" 
+                   Margin="10,0,0,0"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Margin="10,0,0,10">
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="10,0,0,10">
                 <Button x:Name="PrevButton" 
-                        Click="PrevButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24" >
+                Click="PrevButton_Click" 
+                Background="Transparent" 
+                Foreground="{StaticResource AccentBrush}" 
+                FontSize="24" >
                     <Image x:Name="PrevButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/prev.png"/>
                 </Button>
                 <Button x:Name="PlayPauseButton" 
-        Click="PlayPauseButton_Click"
-        Background="Transparent"
-        Foreground="{StaticResource AppTitleBrush}"
-        FontSize="24">
+                Click="PlayPauseButton_Click"
+                Background="Transparent"
+                Foreground="{StaticResource AccentBrush}"
+                FontSize="24">
                     <Image x:Name="FullPlayPauseIcon" Width="24" Height="24" />
                 </Button>
                 <Button x:Name="NextButton" 
-                        Click="NextButton_Click" 
-                        Background="Transparent" 
-                        Foreground="{StaticResource AppTitleBrush}" 
-                        FontSize="24">
+                Click="NextButton_Click" 
+                Background="Transparent" 
+                Foreground="{StaticResource AccentBrush}" 
+                FontSize="24">
                     <Image x:Name="NextButtonImage" Width="24" Height="24" Source="ms-appx:///Assets/next.png"/>
                 </Button>
                 <Slider x:Name="VolumeSlider"
-                       Margin="10,0,0,0"
-                       Width="150"
-        Minimum="0"
-        Maximum="100"
-        Value="100"
-        Foreground="{StaticResource AppTitleBrush}"
-        ValueChanged="VolumeSlider_ValueChanged"/>
+               Margin="10,0,0,0"
+               Width="150"
+               Minimum="0"
+               Maximum="100"
+               Value="100"
+               Foreground="{StaticResource AccentBrush}"
+               ValueChanged="VolumeSlider_ValueChanged"/>
             </StackPanel>
         </Grid>
     </Grid>

@@ -6,17 +6,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Devices.Enumeration;
-using Windows.Devices.SerialCommunication;
 using Windows.Storage;
-using Windows.Storage.Search;
-using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.Networking.Sockets;
-using Windows.Devices.Bluetooth.Rfcomm;
 
 namespace levyke
 {
@@ -33,17 +27,9 @@ namespace levyke
 
         private List<TrackItem> _currentPlaylist = new List<TrackItem>();
         private bool _isArtistViewActive = false;
-        private string _currentArtistName = "";
-
-        private List<ColorPalette> _themes;
 
         private bool _isLoading = false;
         private bool _isInitialized = false;
-
-
-        private StreamSocket _socket;
-        private DataWriter _writer;
-        private DataReader _reader;
 
         public MainPage()
         {
@@ -52,7 +38,6 @@ namespace levyke
             MediaPlayerSingleton.Player.MediaEnded += Player_MediaEnded;
 
             _ = InitializeLibraryAsync();
-            LoadThemes();
             this.Unloaded += (s, e) => _positionTimer?.Stop();
         }
 
@@ -293,7 +278,6 @@ namespace levyke
 
         private void BackToArtistsButton_Click(object sender, RoutedEventArgs e)
         {
-
             ArtistsList.Visibility = Visibility.Visible;
             ArtistSongsPanel.Visibility = Visibility.Collapsed;
 
@@ -388,13 +372,21 @@ namespace levyke
 
         private void UpdatePlayButtonState()
         {
-            string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
-            var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
+            // Обновляем кнопку в полноэкранном плеере (Image)
+            if (FullPlayPauseIcon is Image fullImage)
+            {
+                string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
+                var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
+                fullImage.Source = source;
+            }
 
+            // Обновляем кнопку в мини-плеере (Image)
             if (MiniPlayButton.Content is Image miniImage)
+            {
+                string iconName = MediaPlayerSingleton.IsPlaying ? "pause.png" : "play.png";
+                var source = new BitmapImage(new Uri($"ms-appx:///Assets/{iconName}"));
                 miniImage.Source = source;
-
-            FullPlayPauseIcon.Source = source;
+            }
         }
 
         private void PlaybackSession_PlaybackStateChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)
@@ -553,43 +545,6 @@ namespace levyke
 
         private string FormatTime(TimeSpan t) => $"{(int)t.TotalMinutes}:{t.Seconds:D2}";
 
-        private void LoadThemes()
-        {
-            _themes = ThemeManager.GetThemes();
-            ThemeSelector.ItemsSource = _themes;
-            ThemeSelector.DisplayMemberPath = "Name";
-
-            var savedIndex = ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"];
-            if (savedIndex != null)
-            {
-                ThemeSelector.SelectedIndex = (int)savedIndex;
-                if (ThemeSelector.SelectedItem is ColorPalette selected)
-                    ThemeManager.Apply(selected);
-            }
-        }
-
-        private void ThemeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ThemeSelector.SelectedItem is ColorPalette selected)
-            {
-                ThemeManager.Apply(selected);
-                ApplicationData.Current.LocalSettings.Values["SelectedThemeIndex"] = ThemeSelector.SelectedIndex;
-
-                this.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
-                MiniPlayerPanel.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
-                MiniPlayButton.Background = (Brush)Application.Current.Resources["PlaybackControlBrush"];
-                ThemeSelector.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
-                MainName.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
-                FullPlayerOverlay.Background = (Brush)Application.Current.Resources["MainBackgroundBrush"];
-                ProgressSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
-                VolumeSlider.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
-                SearchBoxText.Foreground = (Brush)Application.Current.Resources["AppTitleBrush"];
-                SearchBox.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
-                SearchBox.BorderBrush = (Brush)Application.Current.Resources["PlaybackControlBrush"];
-                RefreshLibraryButton.Background = (Brush)Application.Current.Resources["MiniPlayerBackgroundBrush"];
-            }
-        }
-
         private void VolumeSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
             double vol = e.NewValue / 100.0;
@@ -599,7 +554,7 @@ namespace levyke
 
         private void FullPlayerOverlay_Loaded(object sender, RoutedEventArgs e)
         {
-            VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 30;
+            VolumeSlider.Value = MediaPlayerSingleton.Player.Volume * 100;
         }
 
         private void ShowLoadingIndicator(bool show)
@@ -693,71 +648,6 @@ namespace levyke
             }
         }
 
-        //ARDUINO
-        private async void ConnectToArduino()
-        {
-            try
-            {
-                string aqs = RfcommDeviceService.GetDeviceSelector(RfcommServiceId.SerialPort);
-                var devices = await DeviceInformation.FindAllAsync(aqs);
-
-                if (devices.Count == 0)
-                {
-                    await new Windows.UI.Popups.MessageDialog("Устройство не найдено").ShowAsync();
-                    return;
-                }
-
-                var device = devices[0];
-                var service = await RfcommDeviceService.FromIdAsync(device.Id);
-                if (service == null) return;
-
-                _socket = new StreamSocket();
-                await _socket.ConnectAsync(service.ConnectionHostName, service.ConnectionServiceName);
-
-                _writer = new DataWriter(_socket.OutputStream);
-                _reader = new DataReader(_socket.InputStream);
-
-                _writer.WriteString("Подключено к Windows!\n");
-                await _writer.StoreAsync();
-
-                uint size = await _reader.LoadAsync(1024);
-                string response = _reader.ReadString(size);
-
-                await new Windows.UI.Popups.MessageDialog($"Ответ: {response}").ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                await new Windows.UI.Popups.MessageDialog($"Ошибка: {ex.Message}").ShowAsync();
-            }
-        }
-
-        public class SimpleArduinoService
-        {
-            private SerialDevice _serial;
-
-            public async Task SendToArduino(string text)
-            {
-                var devices = await DeviceInformation.FindAllAsync(SerialDevice.GetDeviceSelector());
-                if (devices.Count == 0) return;
-
-                _serial = await SerialDevice.FromIdAsync(devices[0].Id);
-                _serial.BaudRate = 115200;
-
-                var writer = new DataWriter(_serial.OutputStream);
-                writer.WriteString(text + "\n");
-                await writer.StoreAsync();
-            }
-        }
-
-        private async void OnTrackChanged(string title, string artist)
-        {
-            var arduino = new SimpleArduinoService();
-            await arduino.SendToArduino($"T:{title}");
-            await Task.Delay(100);
-            await arduino.SendToArduino($"A:{artist}");
-        }
-        //ARDUINO
-
         private void Album_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is AlbumItem album)
@@ -774,7 +664,7 @@ namespace levyke
                 }
 
                 _currentPlaylist = albumTracks;
-                _isArtistViewActive = false; 
+                _isArtistViewActive = false;
 
                 SelectedAlbumName.Text = album.Name;
                 AlbumSongsList.ItemsSource = albumTracks;
@@ -813,10 +703,6 @@ namespace levyke
 
             _currentPlaylist = _tracks.ToList();
             _isArtistViewActive = false;
-        }
-        private void OpenOnlinePage_Click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(Views.OnlinePage));
         }
     }
 }
